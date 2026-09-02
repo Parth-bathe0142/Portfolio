@@ -1,0 +1,33 @@
+#:schema https://schemas.spinframework.dev/spin/manifest-v2/latest.json
+
+spin_manifest_version = 2
+
+[application]
+name = "portfolio"
+version = "0.1.0"
+authors = ["Parth-bathe0142 <parth.bathe0142@gmail.com>"]
+description = "Personal portfolio"
+
+[[trigger.http]]
+route = "/..."
+component = "pages"
+
+[component.pages]
+source = "target/wasm32-wasip1/release/pages.wasm"
+allowed_outbound_hosts = []
+[component.pages.build]
+command = "cargo build --target wasm32-wasip1 --release"
+workdir = "pages"
+watch = ["pages/src/**/*.rs", "Cargo.toml"]
+
+[[trigger.http]]
+route = "/admin/..."
+component = "admin"
+
+[component.admin]
+source = "target/wasm32-wasip1/release/admin.wasm"
+allowed_outbound_hosts = []
+[component.admin.build]
+command = "cargo build --target wasm32-wasip1 --release"
+workdir = "admin"
+watch = ["admin/src/**/*.rs", "Cargo.toml"]
