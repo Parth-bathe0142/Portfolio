@@ -1,0 +1,7 @@
+{
+  "devDependencies": {
+    "@tailwindcss/cli": "^4.3.3",
+    "@types/alpinejs": "^3.13.11",
+    "tailwindcss": "^4.3.3"
+  }
+}
