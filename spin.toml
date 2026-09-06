@@ -18,7 +18,7 @@ allowed_outbound_hosts = []
 [component.pages.build]
 command = "cargo build --target wasm32-wasip1 --release"
 workdir = "pages"
-watch = ["pages/src/**/*.rs", "Cargo.toml"]
+watch = ["pages/src/**/*.rs", "templates/**/*.html", "Cargo.toml"]
 
 [[trigger.http]]
 route = "/admin/..."

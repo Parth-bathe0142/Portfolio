@@ -1,0 +1,67 @@
+<!doctype html>
+<html 
+	lang="en"
+	data-theme="dark"
+	:data-theme="theme"
+	x-data="{ theme: $persist('dark') }"
+	x-init="$watch('theme', v => {})">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>{% block title %}Home | Parth Bathe{% endblock title %}</title>
+		<link rel="stylesheet" href="/static/css/styles.css" />
+		<style>
+			:root {
+				--bg: #eaf2ed;
+				--nav-bg: #dce6df;
+				--surface: #ffffff;
+				--ink: #1a1d2e;
+				--ink-soft: #464b71;
+				--primary: #464b71;
+				--secondary: #118ab2;
+				--accent: #7cd5c7;
+				--border: #464b7133;
+			}
+			[data-theme="dark"] {
+				--bg: #18230f;
+				--nav-bg: #101a0a;
+				--surface: #27391c;
+				--ink: #eaf2e9;
+				--ink-soft: #b9cdb7;
+				--primary: #1f7d53;
+				--secondary: #255f38;
+				--accent: #7cd5c7;
+				--border: #7cd5c733;
+			}
+			html {
+				background: var(--nav-bg);
+			}
+			body {
+				background: var(--bg);
+				color: var(--ink);
+				transition:
+					background 0.2s ease,
+					color 0.2s ease;
+			}
+		</style>
+	</head>
+	<body>
+		{% include "fragments/navbar.html" %}
+		<main>
+			{% block content %} 
+				{% include "fragments/home.html" %} 
+			{% endblock content %}
+		</main>
+	</body>
+	<script src="https://cdn.jsdelivr.net/npm/htmx.org@4.0.0/dist/htmx.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/htmx.org@4.0.0/dist/ext/hx-alpine-compat.js"></script>
+
+	<script
+		defer
+		src="https://cdn.jsdelivr.net/npm/@alpinejs/persist@3.x.x/dist/cdn.min.js"
+	></script>
+	<script
+		defer
+		src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"
+	></script>
+</html>
