@@ -2,4 +2,6 @@ target/
 .spin/
 node_modules/
 
+.env
+
 static/css/styles.css

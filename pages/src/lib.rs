@@ -1,7 +1,5 @@
-use anyhow::Result;
-use askama::Template;
-use http::StatusCode;
-use spin_sdk::http::{IntoResponse, Request, Response, Router};
+use shared::utils::templ;
+use spin_sdk::http::{IntoResponse, Request, Router};
 use spin_sdk::http_component;
 
 use crate::templates::fragments::{Certificates, Home, NotFound, Projects};
@@ -27,11 +25,4 @@ fn handle_pages(req: Request) -> anyhow::Result<impl IntoResponse> {
     router.get("/*", |_: Request, _| templ(NotFoundPage));
     
     Ok(router.handle(req))
-}
-
-fn templ(templ: impl Template) -> Result<Response> {
-    Ok(Response::builder()
-        .status(StatusCode::OK)
-        .body(templ.render()?)
-        .build())
 }

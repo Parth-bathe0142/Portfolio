@@ -5,7 +5,7 @@
 	:data-theme="theme"
 	x-data="{ theme: $persist('dark') }"
 	x-init="$watch('theme', v => {})">
-	<head>
+	<head class="bg-(--nav-bar)">
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<title>{% block title %}Home | Parth Bathe{% endblock title %}</title>
@@ -33,20 +33,18 @@
 				--accent: #7cd5c7;
 				--border: #7cd5c733;
 			}
-			html {
-				background: var(--nav-bg);
-			}
+			
 			body {
-				background: var(--bg);
-				color: var(--ink);
 				transition:
 					background 0.2s ease,
 					color 0.2s ease;
 			}
 		</style>
 	</head>
-	<body>
-		{% include "fragments/navbar.html" %}
+	<body class="bg-(--nav-bar) text-(--ink) min-h-screen">
+		{% block navbar %}
+			{% include "fragments/navbar.html" %}
+		{% endblock navbar %}
 		<main>
 			{% block content %} 
 				{% include "fragments/home.html" %} 

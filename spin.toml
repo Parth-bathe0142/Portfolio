@@ -8,6 +8,9 @@ version = "0.1.0"
 authors = ["Parth-bathe0142 <parth.bathe0142@gmail.com>"]
 description = "Personal portfolio"
 
+[variables]
+jwt_secret = { required = true }
+
 [[trigger.http]]
 route = "/..."
 component = "pages"
@@ -27,10 +30,14 @@ component = "admin"
 [component.admin]
 source = "target/wasm32-wasip1/release/admin.wasm"
 allowed_outbound_hosts = []
+sqlite_databases = ["default"]
 [component.admin.build]
 command = "cargo build --target wasm32-wasip1 --release"
 workdir = "admin"
-watch = ["admin/src/**/*.rs", "Cargo.toml"]
+watch = ["admin/src/**/*.rs", "templates/**/*.html", "Cargo.toml"]
+
+[component.admin.variables]
+jwt_secret = "{{ jwt_secret }}"
 
 [[trigger.http]]
 route = "/static/..."

@@ -1,0 +1,15 @@
+[package]
+name = "shared"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+anyhow = { workspace = true }
+argon2 = "0.6.0"
+askama = { workspace = true }
+chrono = "0.4.45"
+http = { workspace = true }
+jsonwebtoken = { version = "11.0.0", features = ["rust_crypto"] }
+serde = { version = "1.0.229", features = ["derive"] }
+spin-sdk = { workspace = true }
+url = "2.5.8"

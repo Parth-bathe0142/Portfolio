@@ -1,3 +1,15 @@
 @import "tailwindcss";
 
 [x-cloak] { display: none !important }
+
+html {
+	background: var(--nav-bg);
+}
+
+body {
+	background: var(--bg);
+	color: var(--ink);
+	transition:
+		background 0.2s ease,
+		color 0.2s ease;
+}

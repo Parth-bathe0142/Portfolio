@@ -1,0 +1,89 @@
+<div class="max-w-4xl mx-auto my-10 px-6 md:px-12 pt-20 pb-16 flex flex-col items-center">
+	{% if registered %}
+		<h1 class="text-(--ink) font-serif text-3xl md:text-4xl mb-8">
+			Login Super User
+		</h1>
+		<form
+			hx-post="/admin/login"
+			hx-target="#error-message"
+			class="border-(--border) border rounded-sm p-6 flex flex-col gap-5"
+		>
+			<div class="flex flex-col gap-2">
+				<label for="password" class="text-(--ink-soft) font-mono text-sm">
+					Password
+				</label>
+				<input
+					id="password"
+					type="password"
+					name="password"
+					class="text-(--ink) border-(--border) bg-(--bg)
+					border rounded-sm px-3 py-2 text-sm font-mono
+					focus:outline-none focus:border-(--secondary)"
+				>
+			</div>
+
+			<button
+				type="submit"
+				class="bg-(--primary) text-(--surface)
+				font-mono text-sm rounded-sm px-4 py-2
+				hover:opacity-90 transition-opacity"
+			>
+				Login
+			</button>
+
+			<div id="error-message" class="text-(--secondary) font-mono text-xs"></div>
+		</form>
+	{% else %}
+		<h1 class="text-(--ink) font-serif text-3xl md:text-4xl mb-8">
+			Register Super User
+		</h1>
+		<form
+			x-data="{ password: '', confirmPassword: '' }"
+			hx-post="/admin/register"
+			hx-target="#error-message"
+			class="border-(--border) w-sm border rounded-sm p-6 flex flex-col gap-5"
+		>
+			<div class="flex flex-col gap-2">
+				<label for="password" class="text-(--ink-soft) font-mono text-sm">
+					Password
+				</label>
+				<input
+					id="password"
+					type="password"
+					name="password"
+					x-model="password"
+					class="text-(--ink) border-(--border) bg-(--bg)
+					border rounded-sm px-3 py-2 text-sm font-mono
+					focus:outline-none focus:border-(--secondary)"
+				>
+			</div>
+
+			<div class="flex flex-col gap-2">
+				<label for="confirm-password" class="text-(--ink-soft) font-mono text-sm">
+					Confirm Password
+				</label>
+				<input
+					id="confirm-password"
+					type="password"
+					x-model="confirmPassword"
+					class="text-(--ink) border-(--border) bg-(--bg)
+					border rounded-sm px-3 py-2 text-sm font-mono
+					focus:outline-none focus:border-(--secondary)"
+				>
+			</div>
+
+			<button
+				type="submit"
+				:disabled="password === '' || password !== confirmPassword"
+				class="bg-(--primary) text-(--surface) font-mono
+				text-sm rounded-sm px-4 py-2
+				hover:opacity-90 transition-opacity
+				disabled:opacity-40 disabled:cursor-not-allowed"
+			>
+				Register
+			</button>
+
+			<div id="error-message" class="text-(--secondary) font-mono text-xs"></div>
+		</form>
+	{% endif %}
+</div>

@@ -1,0 +1,58 @@
+<nav
+	class="bg-(--nav-bg) border-(--border) w-full flex flex-row items-center justify-between px-6 md:px-12 py-5 border-b"
+>
+	<a
+		href="/"
+		hx-get="/fragments/home"
+		hx-target="main"
+		hx-swap="innerHTML"
+		hx-push-url="/"
+		class="text-(--ink) font-serif text-lg"
+	>
+		<svg
+			width="30px"
+			height="30px"
+			viewBox="0 0 16 16"
+			fill="none"
+			xmlns="http://www.w3.org/2000/svg"
+		>
+			<path
+				fill-rule="evenodd"
+				clip-rule="evenodd"
+				d="M8 0L0 6V8H1V15H4V10H7V15H15V8H16V6L14 4.5V1H11V2.25L8 0ZM9 10H12V13H9V10Z"
+				style="fill: var(--ink)"
+			/>
+		</svg>
+	</a>
+	<div class="flex flex-row items-center gap-8">
+		<a
+			href="/admin"
+			hx-get="/fragments/admin/home"
+			hx-target="main"
+			hx-swap="innerHTML"
+			hx-push-url="/admin"
+			class="text-(--ink-soft) font-mono text-sm hover:underline"
+		>
+			Certificates
+		</a>
+		<a
+			href="/admin/certificates"
+			hx-get="/fragments/admin/certificates"
+			hx-target="main"
+			hx-swap="innerHTML"
+			hx-push-url="/admin/certificates"
+			class="text-(--ink-soft) font-mono text-sm hover:underline"
+		>
+			Certificates
+		</a>
+		<button
+			type="button"
+			@click="theme = theme === 'light' ? 'dark' : 'light'"
+			:aria-label="theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'"
+			class="text-(--ink-soft) border-(--border) font-mono text-xs border rounded-sm px-3 py-1.5"
+		>
+			<span x-show="theme === 'light'">Dark mode</span>
+			<span x-show="theme === 'dark'" x-cloak>Light mode</span>
+		</button>
+	</div>
+</nav>
