@@ -1,5 +1,4 @@
 use anyhow::Result;
-use http::StatusCode;
 use shared::{
     auth::{create_token, get_secret, hash_password, verify_password},
     db::{
@@ -7,21 +6,17 @@ use shared::{
         user::{add_user, get_admin, Role},
         User,
     },
+    errors::AppError,
     utils::{add_cookie, parse_body, redirect, templ},
 };
 use spin_sdk::http::{IntoResponse, Params, Request};
-
-use crate::templates::fragments::LoginError;
 
 pub fn handle_register(req: Request, _: Params) -> Result<impl IntoResponse> {
     let body = parse_body(&req);
     let password = body.get("password").map(|p| p.trim().to_owned());
 
     let Some(password) = password else {
-        return templ(LoginError::new(
-            StatusCode::BAD_REQUEST,
-            "missing password".to_string(),
-        ));
+        return templ(AppError::BadRequest);
     };
 
     let hash = hash_password(&password)?;
@@ -30,10 +25,7 @@ pub fn handle_register(req: Request, _: Params) -> Result<impl IntoResponse> {
 
     let admin = get_admin(&conn)?;
     if admin.is_some() {
-        return templ(LoginError::new(
-            StatusCode::FORBIDDEN,
-            "Super user already exists".to_string(),
-        ));
+        return templ(AppError::Forbidden("Super user already exists"));
     }
 
     let admin = User {
@@ -60,10 +52,7 @@ pub fn handle_login(req: Request, _: Params) -> Result<impl IntoResponse> {
     let password = body.get("password");
 
     let Some(password) = password else {
-        return templ(LoginError::new(
-            StatusCode::BAD_REQUEST,
-            "missing password".to_string(),
-        ));
+        return templ(AppError::BadRequest);
     };
 
     let conn = get_connection()?;
@@ -78,16 +67,13 @@ pub fn handle_login(req: Request, _: Params) -> Result<impl IntoResponse> {
                 let response = redirect("/admin", true).into_builder();
                 Ok(add_cookie(response, "jwt_token", &token, 3600, "/").build())
             } else {
-                templ(LoginError::default())
+                templ(AppError::Unauthorized)
             }
         } else {
-            templ(LoginError::default())
+            templ(AppError::Unauthorized)
         }
     } else {
-        templ(LoginError::new(
-            StatusCode::FAILED_DEPENDENCY,
-            "Admin not registered yet".to_string(),
-        ))
+        templ(AppError::Forbidden("Admin not registered yet"))
     }
 }
 
