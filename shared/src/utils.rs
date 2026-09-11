@@ -2,6 +2,7 @@ use std::collections::HashMap;
 
 use anyhow::Result;
 use askama::Template;
+use base64::prelude::{BASE64_STANDARD, Engine};
 use http::StatusCode;
 use spin_sdk::{
     http::{Request, Response, ResponseBuilder},
@@ -31,6 +32,10 @@ pub fn parse_body(req: &Request) -> HashMap<String, String> {
     url::form_urlencoded::parse(req.body())
         .into_owned()
         .collect()
+}
+
+pub fn decode_base64(s: &str) -> Result<Vec<u8>> {
+    BASE64_STANDARD.decode(s).map_err(|e| e.into())
 }
 
 pub fn redirect(url: &str, htmx: bool) -> Response {

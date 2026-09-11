@@ -1,0 +1,75 @@
+<div id="certificates-table-wrapper">
+	{% if error.is_some() %}
+	<div id="error">{{ error.unwrap() }}</div>
+	{% endif %}
+	<table class="w-full text-sm border-collapse">
+		<thead>
+			<tr class="border-b" style="border-color: var(--border)">
+				<th class="text-left font-mono text-xs font-normal py-3" style="color: var(--ink-soft)">Id</th>
+				<th class="text-left font-mono text-xs font-normal py-3" style="color: var(--ink-soft)">Name</th>
+				<th class="text-left font-mono text-xs font-normal py-3" style="color: var(--ink-soft)">Issuer</th>
+				<th class="text-left font-mono text-xs font-normal py-3" style="color: var(--ink-soft)">Date</th>
+				<th class="text-left font-mono text-xs font-normal py-3" style="color: var(--ink-soft)">Category</th>
+				<th class="text-right font-mono text-xs font-normal py-3" style="color: var(--ink-soft)">Actions</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for cert in certificates %} {% let id = cert.id.unwrap() %}
+			<tr class="border-b" style="border-color: var(--border)">
+				<td class="py-3 font-mono text-xs" style="color: var(--ink-soft)">{{ id }}</td>
+				<td class="py-3" style="color: var(--ink)">{{ cert.name }}</td>
+				<td class="py-3" style="color: var(--ink-soft)">{{ cert.issuer }}</td>
+				<td class="py-3 font-mono text-xs" style="color: var(--ink-soft)">{{ cert.date }}</td>
+				<td class="py-3">
+					<span class="font-mono text-xs border rounded-sm px-2 py-0.5"
+						style="border-color: var(--border); color: var(--secondary)">{{ cert.category }}</span>
+				</td>
+				<td class="py-3 text-right whitespace-nowrap">
+					<button
+						hx-get="/api/data/certificates/{{ id }}"
+						hx-target="#image-modal"
+						hx-swap="innerHTML"
+						@click="open = true"
+						class="font-mono text-xs px-3 py-1.5 rounded-sm border mr-2"
+						style="border-color: var(--border); color: var(--ink-soft)"
+					>
+						Show
+					</button>
+					<button
+						hx-delete="/admin/certificates/{{ id }}"
+						hx-target="closest tr"
+						hx-swap="outerHTML"
+						hx-confirm="Are you sure you want to delete {{ cert.name }}?"
+						class="font-mono text-xs px-3 py-1.5 rounded-sm border"
+						style="border-color: #c0392b55; color: #c0392b"
+					>
+						Delete
+					</button>
+				</td>
+			</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+
+	<div class="flex items-center justify-between font-mono text-sm mt-6 pt-4 border-t" style="border-color: var(--border)">
+		{% if page > 1 %}
+			<a hx-get="/admin/certificates/{{ page - 1 }}" hx-target="#certificates-table-wrapper" hx-swap="outerHTML"
+				class="px-3 py-1.5 rounded-sm border cursor-pointer" style="border-color: var(--border); color: var(--ink-soft)">
+				&larr; Prev
+			</a>
+		{% else %}
+			<span class="px-3 py-1.5 opacity-40" style="color: var(--ink-soft)">&larr; Prev</span>
+		{% endif %}
+
+		<span style="color: var(--ink-soft)">Page {{ page }} of {{ total_pages }}</span>
+
+		{% if page < total_pages %}
+			<a hx-get="/admin/certificates/{{ page + 1 }}" hx-target="#certificates-table-wrapper" hx-swap="outerHTML"
+				class="px-3 py-1.5 rounded-sm border cursor-pointer" style="border-color: var(--border); color: var(--ink-soft)">
+				Next &rarr;
+			</a>
+		{% else %}
+			<span class="px-3 py-1.5 opacity-40" style="color: var(--ink-soft)">Next &rarr;</span>
+		{% endif %}
+	</div>
+</div>

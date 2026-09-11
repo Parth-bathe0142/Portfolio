@@ -44,14 +44,14 @@ pub fn get_certificates_paginated(
     per_page: i64,
 ) -> Result<Vec<CertificateMeta>> {
     let offset = (page - 1).max(0) * per_page;
-    
+
     let data = conn.execute(
         "SELECT * FROM p_certificates_meta ORDER BY date DESC LIMIT ? OFFSET ?",
         &[int(per_page), int(offset)],
     )?;
-    
+
     let mut certificates = Vec::new();
-    
+
     for row in data.rows() {
         certificates.push(CertificateMeta::with_id(
             row.get::<i64>("id").unwrap(),
@@ -61,13 +61,13 @@ pub fn get_certificates_paginated(
             row.get::<&str>("category").unwrap().to_string(),
         ));
     }
-    
+
     Ok(certificates)
 }
 
 pub fn count_certificates(conn: &Connection) -> Result<i64> {
     let data = conn.execute("SELECT COUNT(*) as total FROM p_certificates_meta", &[])?;
-    
+
     Ok(data
         .rows()
         .next()
@@ -82,12 +82,21 @@ pub fn get_image(conn: &Connection, id: i64) -> Result<Option<Image>> {
         return Ok(None);
     };
 
-    let data = row.get::<&[u8]>("data").unwrap();
+    let data = row.get::<&[u8]>("image").unwrap();
 
     Ok(Some(Image {
         id: Some(id),
         data: data.to_vec(),
     }))
+}
+
+pub fn get_categories(conn: &Connection) -> Result<Vec<String>> {
+    let data = conn.execute("SELECT DISTINCT category FROM p_certificates_meta", &[])?;
+    let categories = data
+        .rows()
+        .map(|r| r.get::<&str>("category").unwrap().to_owned())
+        .collect::<Vec<String>>();
+    Ok(categories)
 }
 
 pub fn add_certificate(conn: &Connection, cert: CertificateMeta, image: Image) -> Result<i64> {
@@ -105,7 +114,7 @@ pub fn add_certificate(conn: &Connection, cert: CertificateMeta, image: Image) -
     let id = res.rows.first().unwrap().get::<i64>(0).unwrap();
 
     conn.execute(
-        "INSERT INTO images (id, data) VALUES (?, ?)",
+        "INSERT INTO p_certificates_images (id, image) VALUES (?, ?)",
         &[int(id), blob(image.data)],
     )?;
 
@@ -133,7 +142,7 @@ pub fn edit_certificate(
 
     if let Some(image) = image {
         conn.execute(
-            "UPDATE images SET data = ? WHERE id = ?",
+            "UPDATE p_certificates_images SET image = ? WHERE id = ?",
             &[blob(image.data), int(id)],
         )?;
     }

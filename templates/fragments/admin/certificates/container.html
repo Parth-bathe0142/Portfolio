@@ -1,0 +1,172 @@
+<div class="max-w-4xl mx-auto px-6 md:px-12 py-16">
+	<div class="mb-16">
+		<h2 class="text-(--ink) font-serif text-2xl mb-6">
+			Add new certificate
+		</h2>
+
+		<form
+			hx-post="/admin/certificates"
+			hx-target="#certificates-table-wrapper"
+			hx-swap="outerHTML"
+			class="w-full grid grid-cols-1 sm:grid-cols-2 gap-5 max-w-2xl"
+		>
+			<div class="flex flex-col gap-1">
+				<label
+					for="name"
+					class="text-(--ink-soft) font-mono text-xs"
+					>Name</label
+				>
+				<input
+					type="text"
+					id="name"
+					name="name"
+					required
+					class="border-(--border) text-(--ink) border rounded-sm px-3 py-2 text-sm bg-transparent outline-none focus:ring-2"
+				/>
+			</div>
+
+			<div class="flex flex-col gap-1">
+				<label
+					for="issuer"
+					class="text-(--ink-soft) font-mono text-xs"
+					>Issuer</label
+				>
+				<input
+					type="text"
+					id="issuer"
+					name="issuer"
+					required
+					class="border-(--border) text-(--ink) border rounded-sm px-3 py-2 text-sm bg-transparent outline-none focus:ring-2"
+				/>
+			</div>
+
+			<div class="flex flex-col gap-1">
+				<label
+					for="date"
+					class="text-(--ink-soft) font-mono text-xs"
+					>Date</label
+				>
+				<input
+					type="date"
+					id="date"
+					name="date"
+					required
+					class="border-(--border) text-(--ink) border rounded-sm px-3 py-2 text-sm bg-transparent outline-none focus:ring-2"
+				/>
+			</div>
+
+			<div class="flex flex-col gap-1" x-data="{ addingNew: false }">
+				<label
+					for="category"
+					class="text-(--ink-soft) font-mono text-xs"
+					>Category</label
+				>
+
+				<select
+					x-show="!addingNew"
+					id="category"
+					name="category"
+					:required="!addingNew"
+					@change="if ($event.target.value === '__new__') { addingNew = true; $event.target.removeAttribute('name') }"
+					class="border-(--border) text-(--ink) border rounded-sm px-3 py-2 text-sm bg-transparent outline-none focus:ring-2"
+				>
+					{% for category in categories %}
+					<option value="Rust">Rust</option>
+					<option value="{{ category }}">{{ category }}</option>
+					{% endfor %}
+					<option value="__new__">+ New category&hellip;</option>
+				</select>
+
+				<div x-show="addingNew" x-cloak class="flex gap-2">
+					<input
+						type="text"
+						name="category"
+						placeholder="New category name"
+						:required="addingNew"
+						class="border-(--border) text-(--ink) border rounded-sm px-3 py-2 text-sm bg-transparent outline-none focus:ring-2 flex-1"
+					/>
+					<button
+						type="button"
+						@click="addingNew = false; $el.closest('[x-data]').querySelector('select').setAttribute('name', 'category')"
+						class="border-(--border) text-(--ink-soft) font-mono text-xs px-3 rounded-sm border"
+					>
+						Cancel
+					</button>
+				</div>
+			</div>
+
+			<div
+				class="flex flex-col gap-1 sm:col-span-2"
+				x-data="{ encoding: false }"
+			>
+				<label
+					for="image_file"
+					class="text-(--ink-soft) font-mono text-xs"
+					>Certificate file</label
+				>
+				<input
+					type="file"
+					id="image_file"
+					accept="application/pdf,image/*"
+					required
+					@change="
+						encoding = true;
+						fileToBase64($event.target.files[0]).then(b64 => {
+							$refs.imageData.value = b64;
+							encoding = false;
+						});
+					"
+					class="border-(--border) text-(--ink-soft) font-mono px-3 py-2 text-sm bg-transparent outline-none focus:ring-2"
+				/>
+				<span
+					x-show="encoding"
+					class="text-(--ink-soft) font-mono text-xs"
+					>Encoding&hellip;</span
+				>
+
+				<textarea
+					name="image"
+					x-ref="imageData"
+					class="hidden"
+					required
+				></textarea>
+			</div>
+
+			<div class="sm:col-span-2">
+				<button
+					type="submit"
+					class="bg-(--primary) border-(--border) text-(--ink-soft) font-mono text-sm px-5 py-2.5 rounded-sm"
+				>
+					Add certificate
+				</button>
+			</div>
+		</form>
+	</div>
+
+	{% include "fragments/admin/certificates/table.html" %}
+
+	<script>
+		function fileToBase64(file) {
+			return new Promise((resolve, reject) => {
+				if (!file) return reject(new Error("no file provided"));
+
+				const reader = new FileReader();
+				reader.onload = () => {
+					const b64 = reader.result.split(",")[1] ?? "";
+					resolve(b64);
+				};
+				reader.onerror = () => reject(reader.error);
+				reader.readAsDataURL(file);
+			});
+		}
+	</script>
+
+	<div
+		id="image-modal"
+		x-data="{ open: false }"
+		@click.self="open = false"
+		x-show="open"
+		x-cloak
+		class="bg-[#00000099] fixed inset-0 flex items-center justify-center p-6"
+	></div>
+</div>

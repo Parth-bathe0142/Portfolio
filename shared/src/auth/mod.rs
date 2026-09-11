@@ -56,7 +56,7 @@ pub fn verify_token(token: &str, secret: &[u8]) -> anyhow::Result<Claims> {
     Ok(data.claims)
 }
 
-pub fn authenticate(req: Request, role: Role) -> Result<()> {
+pub fn authenticate(req: &Request, role: Role) -> Result<()> {
     let Some(cookies) = get_cookies(&req) else {
         bail!("missing cookies");
     };

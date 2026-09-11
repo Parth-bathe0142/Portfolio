@@ -3,10 +3,6 @@
 >
 	<a
 		href="/"
-		hx-get="/fragments/home"
-		hx-target="main"
-		hx-swap="innerHTML"
-		hx-push-url="/"
 		class="text-(--ink) font-serif text-lg"
 	>
 		<svg
@@ -27,17 +23,17 @@
 	<div class="flex flex-row items-center gap-8">
 		<a
 			href="/admin"
-			hx-get="/fragments/admin/home"
+			hx-get="/admin"
 			hx-target="main"
 			hx-swap="innerHTML"
 			hx-push-url="/admin"
 			class="text-(--ink-soft) font-mono text-sm hover:underline"
 		>
-			Certificates
+			Admin Home
 		</a>
 		<a
 			href="/admin/certificates"
-			hx-get="/fragments/admin/certificates"
+			hx-get="/admin/certificates"
 			hx-target="main"
 			hx-swap="innerHTML"
 			hx-push-url="/admin/certificates"
