@@ -1,0 +1,17 @@
+[package]
+name = "api"
+authors = ["Parth-bathe0142 <parth.bathe0142@gmail.com>"]
+description = "will provide data and handle game logic"
+version = "0.1.0"
+rust-version = "1.78"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+anyhow = { workspace = true }
+askama = { workspace = true }
+http = { workspace = true }
+shared = { version = "0.1.0", path = "../shared" }
+spin-sdk = { workspace = true }

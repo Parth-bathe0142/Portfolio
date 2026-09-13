@@ -76,7 +76,7 @@ pub fn count_certificates(conn: &Connection) -> Result<i64> {
 }
 
 pub fn get_image(conn: &Connection, id: i64) -> Result<Option<Image>> {
-    let data = conn.execute("SELECT * FROM images WHERE id = ?", &[int(id)])?;
+    let data = conn.execute("SELECT * FROM p_certificates_images WHERE id = ?", &[int(id)])?;
 
     let Some(row) = data.rows().next() else {
         return Ok(None);

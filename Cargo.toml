@@ -1,6 +1,6 @@
 [workspace]
 resolver = "3"
-members = ["pages", "admin", "shared"]
+members = ["api", "pages", "admin", "shared"]
 
 [workspace.dependencies]
 anyhow = "1"
