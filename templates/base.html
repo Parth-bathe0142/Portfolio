@@ -3,9 +3,8 @@
 	lang="en"
 	data-theme="dark"
 	:data-theme="theme"
-	x-data="{ theme: $persist('dark') }"
-	x-init="$watch('theme', v => {})">
-	<head class="bg-(--nav-bar)">
+	x-data="{ theme: $persist('dark') }">
+	<head>
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<title>{% block title %}Home | Parth Bathe{% endblock title %}</title>

@@ -1,10 +1,13 @@
+use askama::Template;
 use shared::utils::templ;
 use spin_sdk::http::{IntoResponse, Request, Router};
 use spin_sdk::http_component;
 
-use crate::templates::fragments::{Certificates, Home, NotFound, Projects};
-use crate::templates::{CertificatesPage, HomePage, NotFoundPage, ProjectsPage};
+use crate::routes::get_certificates_page_or_frag;
+use crate::templates::fragments::{Home, Projects};
+use crate::templates::{HomePage, NotFoundPage, ProjectsPage};
 
+mod routes;
 mod templates;
 
 /// A simple Spin HTTP component.
@@ -12,17 +15,21 @@ mod templates;
 fn handle_pages(req: Request) -> anyhow::Result<impl IntoResponse> {
     let mut router = Router::new();
 
-    router.get("/", |_: Request, _| templ(HomePage));
-    router.get("/projects", |_: Request, _| templ(ProjectsPage));
-    router.get("/certificates", |_: Request, _| templ(CertificatesPage));
-    
-    router.get("/fragments/home", |_: Request, _| templ(Home));
-    router.get("/fragments/projects", |_: Request, _| templ(Projects));
-    router.get("/fragments/certificates", |_: Request, _| templ(Certificates));
-    
+    router.get("/", |req, _| page_or_frag(&req, HomePage, Home));
+    router.get("/projects", |req, _| page_or_frag(&req, ProjectsPage, Projects));
+    router.get("/certificates", get_certificates_page_or_frag);
 
-    router.get("/fragments/*", |_: Request, _| templ(NotFound));
     router.get("/*", |_: Request, _| templ(NotFoundPage));
     
     Ok(router.handle(req))
+}
+
+fn page_or_frag(req: &Request, page: impl Template, fragment: impl Template) -> anyhow::Result<impl IntoResponse> {
+    let htmx = req.header("Hx-Request").is_some();
+
+    if htmx {
+        Ok(templ(fragment))
+    } else {
+        Ok(templ(page))
+    }
 }
