@@ -1,4 +1,4 @@
-{% import "components/modals.html" as modals %}
+{% import "components/macros.html" as macros %}
 <div class="max-w-4xl mx-auto px-6 md:px-12 py-16">
 	<div class="mb-16">
 		<h2 class="text-(--ink) font-serif text-2xl mb-6">
@@ -165,7 +165,7 @@
 		}
 	</script>
 
-	{% call modals::modal() %}
+	{% call macros::modal() %}
 	<div id="image-container" class="max-w-4xl mx-auto opacity-100">
 		<img
 			alt="displayed certificate"

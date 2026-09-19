@@ -1,8 +1,4 @@
 use anyhow::Result;
-use askama::Template;
-use shared::auth::authenticate;
-use shared::db::user::Role;
-use shared::utils::{redirect, templ};
 use spin_sdk::http::{IntoResponse, Request, Router};
 use spin_sdk::http_component;
 
@@ -34,14 +30,4 @@ fn handle_admin(req: Request) -> Result<impl IntoResponse> {
     router.delete("/admin/certificates/:id", delete_certificate);
 
     Ok(router.handle(req))
-}
-
-fn templ_if_logged_in(req: Request, template: impl Template) -> Result<impl IntoResponse> {
-    let htmx = req.header("Hx-Request").is_some();
-
-    if let Err(_) = authenticate(&req, Role::Admin) {
-        return Ok(redirect("/admin/auth", htmx));
-    };
-
-    templ(template)
 }

@@ -1,0 +1,55 @@
+{% macro modal() %}
+<template x-data="{ open: false }" x-teleport="body">
+	<div
+		class="fixed inset-0 bg-[#00000088] flex items-center justify-center"
+		x-show="open"
+		x-cloak
+		@click.self="open = false"
+	>
+		{{ caller() }}
+	</div>
+</template>
+{% endmacro %}
+
+
+{% macro chevron(is_open) %}
+<svg width="16" height="16" viewBox="0 0 16 16" fill="none"
+	class="transition-transform"
+	:class="{ 'rotate-180': {{ is_open }} }"
+>
+	<path d="M1 1L8 8L15 1" stroke="currentColor" stroke-width="2"
+		stroke-linecap="round" stroke-linejoin="round" />
+</svg>
+{% endmacro %}
+
+{# Standalone: owns its own open state #}
+{% macro dropdown(title) %}
+<div x-data="{ open: false }" class="border-(--border) border-t">
+	<button
+		type="button"
+		class="flex w-full items-center justify-between px-6 py-5"
+		@click="open = !open"
+		:aria-expanded="open"
+	>
+		<span>{{ title }}</span>
+		{{ chevron("open") }}
+	</button>
+	<div x-show="open" x-cloak x-transition>{{ caller() }}</div>
+</div>
+{% endmacro %}
+
+{# Accordion item: must sit inside x-data="{ openDropdown: null }" #}
+{% macro accordion_item(title, id) %}
+<div class="border-(--border) border-t">
+	<button
+		type="button"
+		class="flex w-full items-center justify-between px-6 py-5"
+		@click="openDropdown = openDropdown === '{{ id }}' ? null : '{{ id }}'"
+		:aria-expanded="openDropdown === '{{ id }}'"
+	>
+		<span>{{ title }}</span>
+		{{ chevron("openDropdown === '" ~ id ~ "'") }}
+	</button>
+	<div x-show="openDropdown === '{{ id }}'" x-cloak x-transition>{{ caller() }}</div>
+</div>
+{% endmacro %}

@@ -1,0 +1,43 @@
+{% import "components/macros.html" as macros %}
+
+<div class="border-(--border) h-full border rounded-md">
+	<div class="flex">
+		<div class="grow ">
+		{% block header %}
+			<div class="p-2">
+				<h2 class="text-center">Title</h2>
+				<a href="https://github.com">github link</a>
+			</div>
+			{% endblock %}
+			<div class="p-2">
+				{% block summary %}
+				Summary
+				{% endblock %}
+			</div>
+		</div>
+		<div class="shrink-0">
+			{% block logo %}
+				<img
+					class="w-80 object-cover rounded"
+					src="{% block logo_src %}{% endblock %}"
+					alt="{% block logo_alt %}Logo{% endblock %}"
+					@click="selectImage($el.src)"
+					x-init="addImage($el.src)"
+				>
+			{% endblock %}
+		</div>
+	</div>
+	<div x-data="{ openDropdown: null }">
+		{% block accordion %}
+			{% call macros::accordion_item("details", "details") %}
+				<p>
+					description <br>
+					description <br>
+					description <br>
+					description <br>
+					description <br>
+				</p>
+			{% endcall %}
+		{% endblock %}
+	</div>
+</div>

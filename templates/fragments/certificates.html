@@ -1,4 +1,4 @@
-{% import "components/modals.html" as modals %}
+{% import "components/macros.html" as macros %}
 
 <div
 	id="certificates-table-wrapper"
@@ -108,7 +108,7 @@
 		>
 		{% endif %}
 	</div>
-	{% call modals::modal() %}
+	{% call macros::modal() %}
 			<div id="image-container" class="max-w-4xl mx-auto opacity-100">
 				<img
 					alt="displayed certificate"

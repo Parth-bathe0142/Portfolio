@@ -1,1 +1,72 @@
-<h2>Projects</h2>
+{% import "components/macros.html" as macros %}
+<script type="module">
+	document.addEventListener("alpine:init", () => {
+		Alpine.data("imageGroup", () => ({
+			images: [],
+			current: 0,
+			currentImage: null,
+
+			setCurrentImage() {
+				this.currentImage = this.images[this.current];
+			},
+			addImage(src) {
+				this.images.push(src);
+			},
+
+			selectImage(src) {
+				this.currentImage = src;
+				this.current = this.images.indexOf(src);
+			},
+
+			
+			next() {
+				this.current = (this.current + 1) % this.images.length;
+				this.setCurrentImage();
+			},
+			prev() {
+				this.current = (this.current - 1 + this.images.length) % this.images.length;
+				this.setCurrentImage();
+			},
+		}));
+	});
+</script>
+<div
+	class="max-w-4xl mx-auto mt-10"
+	x-data="imageGroup"
+>
+	
+	{% include "fragments/projects/krypt.html" %}
+
+
+	{% call macros::modal() %}
+			<div id="image-container" class="opacity-100 flex justify-center w-full">
+				<div
+					class="flex items-center justify-center grow"
+					@click="prev()"
+				>
+					<svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+						<path d="M15 1 L1 8 L15 15" stroke="currentColor" stroke-width="2"
+							stroke-linecap="round" stroke-linejoin="round" />
+					</svg>
+				</div>
+				<img
+					alt="displayed image"
+					class="max-w-full shrink-0"
+					x-ref="modalImage"
+					:src="currentImage"
+					@click="open = false"
+					x-init="$watch('currentImage', src => src && (open = true)),
+							$watch('open', open => !open && (currentImage = null))"
+				/>
+				<div
+					class="flex items-center justify-center grow"
+					@click="next()"
+				>
+					<svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+						<path d="M1 1 L15 8 L1 15" stroke="currentColor" stroke-width="2"
+							stroke-linecap="round" stroke-linejoin="round" />
+					</svg>
+				</div>
+			</div>
+	{% endcall %}
+</div>
