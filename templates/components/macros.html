@@ -6,11 +6,19 @@
 		x-cloak
 		@click.self="open = false"
 	>
+		<button 
+			class="bg-(--nav-bg), rounded-full h-fit w-fit absolute top-3 right-3"
+			@click="open = false"
+		>
+			<svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+				<path d="M1 1L15 15M1 15L15 1" stroke="currentColor" stroke-width="2"
+					stroke-linecap="round" stroke-linejoin="round" />
+			</svg>
+		</button>
 		{{ caller() }}
 	</div>
 </template>
 {% endmacro %}
-
 
 {% macro chevron(is_open) %}
 <svg width="16" height="16" viewBox="0 0 16 16" fill="none"
@@ -50,6 +58,25 @@
 		<span>{{ title }}</span>
 		{{ chevron("openDropdown === '" ~ id ~ "'") }}
 	</button>
-	<div x-show="openDropdown === '{{ id }}'" x-cloak x-transition>{{ caller() }}</div>
+	<div
+		class="p-8"
+		x-show="openDropdown === '{{ id }}'"
+		x-cloak
+		x-transition
+		
+	>{{ caller() }}</div>
 </div>
+{% endmacro %}
+
+{% macro project_image(src, alt, caption) %}
+<figure class="border-(--border) border rounded-md flex flex-col items-center">
+	<img
+		class="w-full rounded"
+		src="{{ src }}"
+		alt="{{ alt }}"
+		@click="selectImage($el.src)"
+		x-init="addImage($el.src)"
+	/>
+	<figcaption class="text-(--ink-soft) text-sm text-center">{{ caption }}</figcaption>
+</figure>
 {% endmacro %}

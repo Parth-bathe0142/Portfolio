@@ -1,0 +1,113 @@
+{% extends "fragments/projects/entry.html" %}
+{% import "components/macros.html" as macros %}
+{% import "fragments/projects/entry.html" as entry_macros %}
+
+
+{% block header %}
+	{{ entry_macros::project_header("Krypt", "https://github.com/Parth-bathe0142/krypt") }}
+{% endblock %}
+
+{% block summary %}
+	<p>
+		A distributed CLI keyring made with CLAP for securely storing credentials and accessing
+		them across devices in seconds. Built in Rust to explore server-side WebAssembly with the
+		Spin framework, where every request is handled by a fresh, isolated WASM instance
+		instead of a long-lived backend.
+	</p>
+	<div class="text-(--ink-soft) mt-2 text-sm flex flex-wrap flex-row gap-4">
+		<span>Rust</span>
+		<span>Spin</span>
+		<span>Clap</span>
+		<span>Serverside WebAssembly</span>
+		<span>Fermyon Cloud</span>
+	</div>
+{% endblock %}
+
+{% block logo_src %}/static/assets/images/krypt/fermyon_dashboard.png{% endblock %}
+{% block logo_alt %}Fermyon dashboard for krypt's server{% endblock %}
+
+{% block accordion %}
+	{% call macros::accordion_item("Details", "details") %}
+		<div class="space-y-3">
+			<p>
+				Krypt is a workspace of three crates: a <strong>CLI client</strong>, a
+				<strong>Spin server</strong> compiled to WebAssembly, and a
+				<strong>shared crate</strong> holding validation logic and DTOs used by
+				both sides.
+			</p>
+		
+			<h3 class="font-semibold">Why Spin and WASM</h3>
+			<p>
+				Spin runs each incoming request in a new, sandboxed WASM instance with
+				its own linear memory. Instances start in microseconds, so this
+				instance-per-request model is practical. It is conceptually similar to
+				CGI's process-per-request, but without the cost of spawning processes or
+				the platform-specific binaries.
+			</p>
+		
+			<h3 class="font-semibold">Security model</h3>
+			<ul class="list-disc pl-5">
+				<li>
+					Stored keys are encrypted on the server with the user's password,
+					and re-encrypted when the password changes.
+				</li>
+				<li>
+					Every request is authenticated. There are no sessions or tokens.
+				</li>
+				<li>The password is stored locally in the system keyring.</li>
+			</ul>
+		
+			<h3 class="font-semibold">Platform support</h3>
+			<ul class="list-disc pl-5">
+				<li>
+					Keyring backends: Secret Service on Linux, Keychain on macOS,
+					Credential Manager on Windows.
+				</li>
+				<li>
+					Clipboard: <code>wl-copy</code> for Wayland and
+					<code>arboard</code> elsewhere. Krypt probes both on first use and
+					remembers the one that works.
+				</li>
+				<li>
+					Copied keys can be cleared from the clipboard after a configurable
+					timeout (1-60 seconds), or by pressing enter to clear immediately.
+				</li>
+			</ul>
+		
+			<h3 class="font-semibold">Limitations</h3>
+			<ul class="list-disc pl-5">
+				<li>No account recovery: losing the password means losing the data.</li>
+				<li>
+					Uses an older <code>spin_sdk</code> (v3.1.0) for Fermyon Cloud compatibility,
+					which only supports WASIp1. Will be updated once Akamai functions
+					become available to the general public.
+				</li>
+			</ul>
+		</div>
+	{% endcall %}
+
+	{% call macros::accordion_item("Screenshots", "screenshots") %}
+		<div class="flex flex-wrap gap-4">
+			{{ macros::project_image(
+				"/static/assets/images/krypt/krypt_help.png",
+				"command usage",
+				"Command usage"
+			)}}
+			{{ macros::project_image(
+				"/static/assets/images/krypt/config_help.png",
+				"config help menu",
+				"Config help menu"
+			)}}
+			{{ macros::project_image(
+				"/static/assets/images/krypt/config_file.png",
+				"config file",
+				"Config file"
+			)}}
+			{{ macros::project_image(
+				"/static/assets/images/krypt/usage.png",
+				"saving and retrieving keys",
+				"Saving and retrieving keys"
+			)}}
+		</div>
+	{% endcall %}
+{% endblock %}

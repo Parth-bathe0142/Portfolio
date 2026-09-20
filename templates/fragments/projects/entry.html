@@ -1,42 +1,74 @@
 {% import "components/macros.html" as macros %}
 
-<div class="border-(--border) h-full border rounded-md">
+{% macro project_header(title, glink, dlink = "") %}
+<div class="p-5">
+	<h2 class="text-(--ink) text-2xl font-medium">
+		{{ title }}
+	</h2>
+	<a
+		href="{{ glink }}"
+		class="text-(--ink-soft) font-mono text-sm inline-block mt-2 hover:underline"
+	>
+		{{ glink }}
+	</a>
+	{% if dlink != "" %}
+	<a
+		href="{{ dlink }}"
+		class="text-(--ink-soft) font-mono text-sm inline-block mt-2 hover:underline"
+	>
+		{{ dlink }}
+	</a>
+	{% endif %}
+</div>
+{% endmacro %}
+
+<div
+	class="border-(--border) max-w-4xl mx-auto mt-10
+	border rounded-sm bg-(--surface)"
+>
 	<div class="flex">
-		<div class="grow ">
-		{% block header %}
-			<div class="p-2">
-				<h2 class="text-center">Title</h2>
-				<a href="https://github.com">github link</a>
-			</div>
+		<div class="grow min-w-0">
+			{% block header %}
+				{{ project_header(title, link) }}
 			{% endblock %}
-			<div class="p-2">
+
+			<div class="text-(--ink) border-(--border) border-t p-5">
 				{% block summary %}
-				Summary
+				<p class="text-(--ink-soft) text-sm leading-6">
+					Summary
+				</p>
 				{% endblock %}
 			</div>
 		</div>
-		<div class="shrink-0">
+
+		<div class="shrink-0 p-4">
 			{% block logo %}
-				<img
-					class="w-80 object-cover rounded"
-					src="{% block logo_src %}{% endblock %}"
-					alt="{% block logo_alt %}Logo{% endblock %}"
-					@click="selectImage($el.src)"
-					x-init="addImage($el.src)"
-				>
+			<img
+				class="w-64 h-64 object-cover rounded-sm border-(--border) border"
+				src="{% block logo_src %}{% endblock %}"
+				alt="{% block logo_alt %}Logo{% endblock %}"
+				@click="selectImage($el.src)"
+				x-init="addImage($el.src)"
+			>
 			{% endblock %}
 		</div>
 	</div>
-	<div x-data="{ openDropdown: null }">
+
+	<div
+		x-data="{ openDropdown: null }"
+		class="border-(--border) border-t"
+	>
 		{% block accordion %}
 			{% call macros::accordion_item("details", "details") %}
-				<p>
-					description <br>
-					description <br>
-					description <br>
-					description <br>
-					description <br>
-				</p>
+				<div class="text-(--ink-soft) text-sm leading-6">
+					<p>
+						description <br>
+						description <br>
+						description <br>
+						description <br>
+						description <br>
+					</p>
+				</div>
 			{% endcall %}
 		{% endblock %}
 	</div>
