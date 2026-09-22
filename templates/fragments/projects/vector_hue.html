@@ -1,0 +1,126 @@
+{% extends "fragments/projects/entry.html" %}
+{% import "components/macros.html" as macros %}
+
+{% block header %}
+<div class="p-5">
+	<h2 class="text-(--ink) text-2xl font-medium">
+		VectorHue
+	</h2>
+	<span
+		class="text-(--ink-soft) font-mono text-sm inline-block mt-2 hover:underline"
+	>
+		Private Project -- WIP
+	</span>
+</div>
+{% endblock %}
+
+{% block summary %}
+	<p>
+		A web-based image vectorizer that converts raster images to SVG while recognising
+		and preserving gradients, using a custom six-phase conversion pipeline. The output
+		keeps the smoothness and detail of a raster image with the scalability and
+		compactness of a vector.
+	</p>
+	<div class="text-(--ink-soft) mt-2 text-sm flex flex-wrap flex-row gap-4">
+		<span>Rust</span>
+		<span>Axum</span>
+		<span>Askama</span>
+		<span>HTMX</span>
+		<span>Alpine</span>
+		<span>TypeScript</span>
+		<span>SVG</span>
+	</div>
+{% endblock %}
+
+{% block logo_src %}/static/assets/images/vector_hue/logo.png{% endblock %}
+{% block logo_alt %}VectorHue logo{% endblock %}
+
+{% block accordion %}
+	{% call macros::accordion_item("Competition", "competition") %}
+		<div class="space-y-3">
+			<p>
+				VectorHue was presented at the
+				<a 
+					href="https://www.linkedin.com/posts/renowned-educational-institution_entrepreneurship-entrepreneurshipdevelopment-activity-7233124578703679488-CcCW"
+					target="_blank"
+					class="text-(--ink-soft) underline"
+				>
+					Intra-university Entrepreneurship Competition
+				</a>,
+				organised by SRUJAN - Entrepreneurship Development &amp; Incubation Centre, SBUP.
+			</p>
+			<p>
+				It secured <strong>2nd place out of 60+ teams</strong> from all courses.
+			</p>
+			{{ macros::project_image(
+				"/static/assets/images/vector_hue/competition.jpg",
+				"Competition",
+				"Second prize awarded",
+			)}}
+		</div>
+	{% endcall %}
+
+	{% call macros::accordion_item("Details", "details") %}
+		<div class="space-y-3">
+			<p>
+				Users upload an image, adjust a few conversion parameters, and download the
+				result as <strong>SVG</strong> or compressed <strong>SVGZ</strong>. Most
+				existing tools rely on simple edge detection and flatten gradients into solid
+				colours. VectorHue instead runs a six-phase pipeline:
+			</p>
+
+			<ol class="list-decimal pl-5 space-y-1">
+				<li>
+					<strong>Smoothing:</strong> a custom blur/sharpening filter that smooths
+					gradients, removes anti-aliasing and noise, and refines edges.
+				</li>
+				<li>
+					<strong>Identification:</strong> Gradients are identified using a modified 
+					flood fill algorithm that tolerates shifting colors. these regions are marked
+					for further processing.
+				</li>
+				<li>
+					<strong>Concave hull simplification:</strong> region borders are
+					simplified by dropping points that don't contribute to the shape, which
+					greatly reduces file size.
+				</li>
+				<li>
+					<strong>Filtering duplicates:</strong> reusable gradients are identified
+					and shared as definitions, reducing file size and improving editability.
+				</li>
+				<li>
+					<strong>Writing the file:</strong> path elements and gradient definitions
+					are written to the final SVG.
+				</li>
+			</ol>
+
+			<h3 class="font-semibold">From TypeScript to Rust</h3>
+			<p>
+				The first prototype was the conversion process itself, written in TypeScript
+				and running entirely in the browser. When performance issues started
+				showing up, I rebuilt it in Rust as a server-rendered app using Axum and
+				Askama, with HTMX and Alpine for interactivity.
+			</p>
+
+			<h3 class="font-semibold">Status</h3>
+			<ul class="list-disc pl-5">
+				<li>Heavily work in progress and not publicly available yet.</li>
+				<li>A Postgres database will be added once the core is working and ready to deploy.</li>
+				<li>
+					Planned for later: smart layer separation, pattern filling and other
+					advanced conversion features.
+				</li>
+			</ul>
+		</div>
+	{% endcall %}
+
+	{% call macros::accordion_item("Screenshots", "screenshots") %}
+		<div class="flex flex-wrap gap-4">
+			{{ macros::project_image(
+				"/static/assets/images/vector_hue/gradient.png",
+				"Gradient identification",
+				"Example gradient identification (color represents direction)",
+			)}}
+		</div>
+	{% endcall %}
+{% endblock %}
