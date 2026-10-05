@@ -1,0 +1,111 @@
+{% extends "fragments/projects/entry.html" %}
+{% import "components/macros.html" as macros %}
+{% import "fragments/projects/entry.html" as entry_macros %}
+
+
+{% block header %}
+	{{ entry_macros::project_header("WASM Research Project", "https://github.com/Parth-bathe0142/wasm-research") }}
+{% endblock %}
+
+{% block summary %}
+	<p>
+		A collection of browser-based benchmarks comparing multithreaded WebAssembly,
+		single-threaded WebAssembly and native JavaScript across compute-bound,
+		memory-bound string-processing, etc workloads, run on 3 separate browsers.
+	</p>
+	<div class="text-(--ink-soft) mt-2 text-sm flex flex-wrap flex-row gap-4">
+		<span>Rust</span>
+		<span>WebAssembly</span>
+		<span>Rayon</span>
+		<span>wasm-bindgen</span>
+		<span>Node.js</span>
+		<span>SQLite</span>
+		<span>Chart.js</span>
+	</div>
+{% endblock %}
+
+{% block logo_src %}/static/assets/images/research/results.jpeg{% endblock %}
+{% block logo_alt %}Benchmark results summary{% endblock %}
+
+{% block accordion %}
+	{% call macros::accordion_item("Details", "details") %}
+		<div class="space-y-3">
+			<p>
+				WebAssembly threading works by loading the same WASM module into
+				several Web Workers that share one linear memory buffer through a
+				<code>SharedArrayBuffer</code>, synchronised with atomics and
+				mutexes. It requires cross-origin isolation, which means the server
+				must set the headers:
+	 			<pre class="bg-gray-900 text-amber-100">	
+	<code>Cross-Origin-Opener-Policy</code>
+	<code>Cross-Origin-Embedder-Policy</code>
+				</pre>
+			</p>
+			<p>
+				In Rust, the
+				<code>rayon</code> crate abstracts the parallel execution, and
+				<code>wasm-bindgen-rayon</code> bridges it to Web Workers.
+			</p>
+
+			<h3 class="font-semibold">Benchmarks</h3>
+			<p>
+				Six benchmarks cover different bottlenecks: constant-folded integer
+				summation, matrix multiplication, Gaussian image blur,
+				substring search, array sorting, and Pearson correlation. Between
+				them they stress compute throughput, JS↔WASM copy costs, UTF-16 to
+				UTF-8 transcoding, and thread coordination overhead.
+			</p>
+
+			<h3 class="font-semibold">Methodology</h3>
+			<ul class="list-disc pl-5">
+				<li>100 warm-up runs are discarded, then 50 runs are recorded per input size per runtime.</li>
+				<li>Input data is regenerated fresh each run, and input sizes are tested in randomised order to reduce JIT and memory-state bias.</li>
+				<li>Outliers are removed with the 1.5×IQR rule before medians are computed per input size.</li>
+				<li>Results are aggregated across input sizes per browser and test, using median, coefficient of variation, and overhead relative to native JS.</li>
+				<li>Tested across Firefox, Chrome and Microsoft Edge, with results stored per browser in SQLite.</li>
+			</ul>
+
+			<h3 class="font-semibold">Key findings</h3>
+			<ul class="list-disc pl-5">
+				<li>Multithreaded WASM gives the largest speedups on embarrassingly parallel, compute-bound work: roughly 8× for matrix multiplication and 3.5× for image blur, versus native JS.</li>
+				<li>Single-threaded WASM matches or beats native JS on numerical workloads, thanks to LLVM's ahead-of-time optimisation.</li>
+				<li>WASM loses to native JS on string-heavy work like grep, due to the copy and UTF-16→UTF-8 transcoding cost at the JS↔WASM boundary.</li>
+				<li>Threading gives negligible or negative returns on memory bound or small input workloads, where coordination overhead outweighs the parallelism.</li>
+				<li>WASM execution is generally lower-variance than native JS, which matters in latency-sensitive contexts.</li>
+			</ul>
+		</div>
+	{% endcall %}
+
+	{% call macros::accordion_item("Running it", "running-it") %}
+		<div class="space-y-3">
+			<p>
+				Prebuilt WASM modules are checked into the repo, so the benchmarks
+				can be run without a Rust toolchain. To rebuild them from source,
+				<code>rust-toolchain.toml</code> pins the Rust nightly compiler
+				needed for the threading proposal, and <code>cargo-make</code>
+				drives the build:
+			</p>
+			<pre class="overflow-x-auto rounded p-2 text-amber-100 bg-gray-900"><code>cd rust
+cargo make build-wasm   # compiles both singlethread and multithread crates</code></pre>
+
+			<p>To run the benchmark suite itself:</p>
+			<pre class="overflow-x-auto rounded p-2 text-amber-100 bg-gray-900"><code>npm install
+node .             # starts the Express server</code></pre>
+			<p>
+				The page loads the JS, single-threaded WASM and multithreaded WASM
+				implementations, spawns Web Workers via
+				<code>wasm-bindgen-rayon</code>, and runs each benchmark across a
+				range of input sizes, storing results in <code>results.db</code>
+				for offline analysis and rendering them with Chart.js.
+			</p>
+		</div>
+	{% endcall %}
+
+	{% call macros::accordion_item("Paper", "paper") %}
+		<div class="flex flex-wrap gap-4">
+			<object data="/static/assets/docs/ResearchPaper.pdf" type="application/pdf" width="100%" height="600px">
+				<a href="/static/assets/docs/ResearchPaper.pdf">Download the PDF</a>
+			</object>
+		</div>
+	{% endcall %}
+{% endblock %}
