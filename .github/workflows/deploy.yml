@@ -1,0 +1,41 @@
+name: Deploy
+
+on:
+  push:
+    branches: [deployment]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        run: rustup show
+
+      - uses: Swatinem/rust-cache@v2
+
+      - uses: fermyon/actions/spin/setup@v1
+        with:
+          version: v4.0.2
+          plugins: cloud
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 26.10.0
+
+      - name: Build CSS
+        run: |
+          npm ci
+          npx @tailwindcss/cli -i input.css -o static/css/styles.css --minify
+          
+      - name: Build
+        run: spin build
+
+      - name: Deploy
+        env:
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          SPIN_ACCESS_TOKEN: ${{ secrets.SPIN_ACCESS_TOKEN }}
+        run: |
+          spin cloud login --auth-method token --token $SPIN_ACCESS_TOKEN
+          spin cloud deploy --variable jwt_secret="$JWT_SECRET"
