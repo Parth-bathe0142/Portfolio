@@ -1,24 +1,25 @@
 use askama::Template;
+use askama_web::WebTemplate;
 use shared::db::CertificateMeta;
 
 pub mod fragments;
 
-#[derive(Template)]
+#[derive(Template, WebTemplate)]
 #[template(path = "pages/admin/auth.html")]
 pub struct AuthPage {
-	pub registered: bool
+    pub registered: bool,
 }
 
-#[derive(Template)]
+#[derive(Template, WebTemplate)]
 #[template(path = "pages/admin/home.html")]
 pub struct HomePage;
 
-#[derive(Template)]
+#[derive(Template, WebTemplate)]
 #[template(path = "pages/admin/certificates.html")]
 pub struct CertPage {
-	pub certificates: Vec<CertificateMeta>, 
-	pub categories: Vec<String>,
-	pub page: u32,
-	pub total_pages: u32,
-	pub error: Option<&'static str>,
+    pub certificates: Vec<CertificateMeta>,
+    pub categories: Vec<String>,
+    pub page: u32,
+    pub total_pages: u32,
+    pub error: Option<&'static str>,
 }

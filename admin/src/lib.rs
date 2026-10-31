@@ -1,11 +1,15 @@
 use anyhow::Result;
-use spin_sdk::http::{IntoResponse, Request, Router};
+use axum::routing::{get, post};
+use axum::Router;
+use shared::app_state::AppState;
+use spin_sdk::http::IntoResponse as SpinIntoResponse;
 use spin_sdk::http_component;
+use tower::ServiceExt;
 
 use crate::auth::{handle_login, handle_logout, handle_register};
 use crate::routes::{
-    add_new_certificate, auth_page, delete_certificate, get_certificates_page_or_container,
-    get_certificates_page_or_table, get_home_page_or_fragment,
+    auth_page, delete_certificate, get_certificates_page, get_certificates_table, home,
+    new_certificate,
 };
 
 mod auth;
@@ -13,21 +17,33 @@ mod routes;
 mod templates;
 
 #[http_component]
-fn handle_admin(req: Request) -> Result<impl IntoResponse> {
-    let mut router = Router::new();
+async fn handle_admin(req: http::Request<Vec<u8>>) -> Result<impl SpinIntoResponse> {
+    let app = router(AppState::new().expect("secret variable jwt_secret not set"));
 
-    router.get("/admin", get_home_page_or_fragment);
-    router.get("/admin/auth", auth_page);
-    router.get("/admin/certificates", get_certificates_page_or_container);
-    router.get("/admin/certificates/:page", get_certificates_page_or_table);
+    let (parts, body) = req.into_parts();
+    let req = http::Request::from_parts(parts, axum::body::Body::from(body));
 
-    router.post("/admin/register", handle_register);
-    router.post("/admin/login", handle_login);
-    router.post("/admin/logout", handle_logout);
+    let resp = app.oneshot(req).await?;
+    let (parts, body) = resp.into_parts();
+    let bytes = axum::body::to_bytes(body, usize::MAX).await?;
 
-    router.post("/admin/certificates", add_new_certificate);
+    Ok(http::Response::from_parts(parts, bytes.to_vec()))
+}
 
-    router.delete("/admin/certificates/:id", delete_certificate);
-
-    Ok(router.handle(req))
+fn router(state: AppState) -> Router {
+    Router::new()
+        .route("/admin", get(home))
+        .route("/admin/auth", get(auth_page))
+        .route(
+            "/admin/certificates",
+            get(get_certificates_page).post(new_certificate),
+        )
+        .route(
+            "/admin/certificates/{page}",
+            get(get_certificates_table).delete(delete_certificate),
+        )
+        .route("/admin/register", post(handle_register))
+        .route("/admin/login", post(handle_login))
+        .route("/admin/logout", post(handle_logout))
+        .with_state(state)
 }

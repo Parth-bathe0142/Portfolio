@@ -7,6 +7,7 @@
 
 		<form
 			hx-post="/admin/certificates"
+			hx-encoding="multipart/form-data"
 			hx-target="#certificates-table-wrapper"
 			hx-swap="outerHTML"
 			class="w-full grid grid-cols-1 sm:grid-cols-2 gap-5 max-w-2xl"
@@ -53,7 +54,7 @@
 				/>
 			</div>
 
-			<div class="flex flex-col gap-1" x-data="{ addingNew: false }">
+			<div class="flex flex-col gap-1" x-data="{ addingNew: {{ categories.is_empty() }} }">
 				<label
 					for="category"
 					class="text-(--ink-soft) font-mono text-xs"
@@ -66,9 +67,8 @@
 					x-ref="selection"
 					x-show="!addingNew"
 					:required="!addingNew"
-					@change="if ($event.target.value === '__new__') {
-						addingNew = true; $event.target.removeAttribute('name')
-					}"
+					:disabled="addingNew"
+					@change="addingNew = $event.target.value === '__new__'"
 					class="border-(--border) text-(--ink) border rounded-sm
 					px-3 py-2 text-sm bg-transparent outline-none focus:ring-2"
 				>
@@ -84,12 +84,13 @@
 						name="category"
 						placeholder="New category name"
 						:required="addingNew"
+						:disabled="!addingNew"
 						class="border-(--border) text-(--ink) border rounded-sm
 						px-3 py-2 text-sm bg-transparent outline-none focus:ring-2 flex-1"
 					/>
 					<button
 						type="button"
-						@click="addingNew = false; $refs.selection.setAttribute('name', 'category')"
+						@click="addingNew = false; $refs.selection.selectedIndex = 0"
 						class="border-(--border) text-(--ink-soft) font-mono text-xs px-3 rounded-sm border"
 					>
 						Cancel
@@ -97,42 +98,19 @@
 				</div>
 			</div>
 
-			<div
-				class="flex flex-col gap-1 sm:col-span-2"
-				x-data="{ encoding: false }"
-			>
-				<label
-					for="image_file"
-					class="text-(--ink-soft) font-mono text-xs"
+			<div class="flex flex-col gap-1 sm:col-span-2">
+				<label for="image_file" class="text-(--ink-soft) font-mono text-xs"
 					>Certificate file</label
 				>
 				<input
 					type="file"
 					id="image_file"
+					name="image"
 					accept="application/pdf,image/*"
 					required
-					@change="
-						encoding = true;
-						fileToBase64($event.target.files[0]).then(b64 => {
-							$refs.imageData.value = b64;
-							encoding = false;
-						});
-					"
 					class="border-(--border) text-(--ink-soft) font-mono px-3 py-2
 					text-sm bg-transparent outline-none focus:ring-2"
 				/>
-				<span
-					x-show="encoding"
-					class="text-(--ink-soft) font-mono text-xs"
-					>Encoding&hellip;</span
-				>
-
-				<textarea
-					name="image"
-					x-ref="imageData"
-					class="hidden"
-					required
-				></textarea>
 			</div>
 
 			<div class="sm:col-span-2">
@@ -148,22 +126,6 @@
 	</div>
 
 	{% include "fragments/admin/certificates/table.html" %}
-
-	<script>
-		function fileToBase64(file) {
-			return new Promise((resolve, reject) => {
-				if (!file) return reject(new Error("no file provided"));
-
-				const reader = new FileReader();
-				reader.onload = () => {
-					const b64 = reader.result.split(",")[1] ?? "";
-					resolve(b64);
-				};
-				reader.onerror = () => reject(reader.error);
-				reader.readAsDataURL(file);
-			});
-		}
-	</script>
 
 	{% call macros::modal() %}
 	<div id="image-container" class="max-w-4xl mx-auto opacity-100">

@@ -1,183 +1,184 @@
 use anyhow::Result;
+use axum::{
+    extract::Path,
+    response::{IntoResponse, Response},
+};
+use axum_extra::extract::Multipart;
+use axum_htmx::HxRequest;
 use http::StatusCode;
+use serde::Deserialize;
 use shared::{
-    auth::authenticate,
+    auth::extractor::AdminOnly,
     db::{
         certificates::{
             add_certificate, count_certificates, delete_certificate as delete_certificate_db,
             get_categories, get_certificates_paginated, Image,
         },
         get_connection,
-        user::{get_admin, Role},
+        user::get_admin,
         CertificateMeta,
     },
     errors::AppError,
-    utils::{decode_base64, parse_body, redirect, templ},
 };
-use spin_sdk::http::{IntoResponse, Params, Request, Response};
 
-use crate::templates::{AuthPage, CertPage, HomePage, fragments::{CertContainer, CertTable, Home}};
+use crate::templates::{
+    fragments::{CertContainer, CertTable, Home},
+    AuthPage, CertPage, HomePage,
+};
 
-pub fn auth_page(_: Request, _: Params) -> Result<impl IntoResponse> {
+pub async fn auth_page() -> Result<AuthPage, AppError> {
     let conn = get_connection()?;
     let admin = get_admin(&conn)?;
 
-    templ(AuthPage {
+    Ok(AuthPage {
         registered: admin.is_some(),
     })
 }
 
-pub fn get_home_page_or_fragment(req: Request, _: Params) -> Result<Response> {
-    let htmx = req.header("Hx-Request").is_some();
-
-    let Ok(_) = authenticate(&req, Role::Admin) else {
-        return Ok(redirect("/admin/auth", false));
-    };
-
-    if htmx {
-        templ(Home)
+pub async fn home(_: AdminOnly, HxRequest(hx): HxRequest) -> Result<Response, AppError> {
+    if hx {
+        Ok(Home.into_response())
     } else {
-    	templ(HomePage)
+        Ok(HomePage.into_response())
     }
-	
 }
 
-pub fn get_certificates_page_or_container(req: Request, _: Params) -> Result<Response> {
-    let htmx = req.header("Hx-Request").is_some();
-    
-    let Ok(_) = authenticate(&req, Role::Admin) else {
-        return Ok(redirect("/admin/auth", false));
-    };
-
+pub async fn get_certificates_page(
+    _: AdminOnly,
+    HxRequest(hx): HxRequest,
+) -> Result<Response, AppError> {
     let conn = get_connection()?;
     let certificates = get_certificates_paginated(&conn, 1, 10)?;
     let categories = get_categories(&conn)?;
 
-    let total_pages = count_certificates(&conn)? as u32;
+    let total_pages = count_certificates(&conn)? as f32 / 10.;
+    let total_pages = total_pages.ceil() as u32;
 
-    if htmx {
-        templ(CertContainer {
+    if hx {
+        Ok(CertContainer {
             categories,
             certificates,
             page: 1,
             total_pages,
-            error: None
-        })
+            error: None,
+        }
+        .into_response())
     } else {
-        templ(CertPage {
+        Ok(CertPage {
             categories,
             certificates,
             page: 1,
             total_pages,
-            error: None
-        })
+            error: None,
+        }
+        .into_response())
     }
 }
 
-pub fn get_certificates_page_or_table(req: Request, params: Params) -> Result<Response> {
-    let htmx = req.header("Hx-Request").is_some();
+#[derive(Deserialize)]
+pub(crate) struct PageQuery {
+    page: Option<i64>,
+}
 
-    let Ok(_) = authenticate(&req, Role::Admin) else {
-        return Ok(redirect("/admin/auth", false));
-    };
-
-    let page = params
-        .get("page")
-        .unwrap_or("1")
-        .parse::<i64>()
-        .unwrap_or(1);
+pub async fn get_certificates_table(
+    _: AdminOnly,
+    Path(query): Path<PageQuery>,
+    HxRequest(hx): HxRequest,
+) -> Result<Response, AppError> {
+    let page = query.page.unwrap_or(1);
 
     let conn = get_connection()?;
     let certificates = get_certificates_paginated(&conn, page, 10)?;
     let categories = get_categories(&conn)?;
 
     let page = page as u32;
-    let total_pages = count_certificates(&conn)? as u32;
+    let total_pages = count_certificates(&conn)? as f32 / 10.;
+    let total_pages = total_pages.ceil() as u32;
 
-    if htmx {
-        templ(CertTable {
+    if hx {
+        Ok(CertTable {
             certificates,
             page,
             total_pages,
             error: None,
-        })
+        }
+        .into_response())
     } else {
-        templ(CertPage {
+        Ok(CertPage {
             certificates,
             categories,
             page,
             total_pages,
             error: None,
-        })
+        }
+        .into_response())
     }
 }
 
-pub fn add_new_certificate(req: Request, _: Params) -> Result<impl IntoResponse> {
-    let Ok(_) = authenticate(&req, Role::Admin) else {
-        return Ok(redirect("/admin/auth", false));
-    };
+pub async fn new_certificate(
+    _admin: AdminOnly,
+    mut multipart: Multipart,
+) -> Result<CertTable, AppError> {
+    let (mut name, mut issuer, mut date, mut category, mut image) = (None, None, None, None, None);
 
-    let body = parse_body(&req);
+    while let Some(field) = multipart.next_field().await? {
+        let field_name = field.name().map(str::to_owned);
+        match field_name.as_deref() {
+            Some("name") => name = Some(field.text().await?),
+            Some("issuer") => issuer = Some(field.text().await?),
+            Some("date") => date = Some(field.text().await?),
+            Some("category") => category = Some(field.text().await?),
+            Some("image") => {
+                let bytes = field.bytes().await?;
 
-    let name = body.get("name").cloned();
-    let issuer = body.get("issuer").cloned();
-    let date = body.get("date").cloned();
-    let category = body.get("category").cloned();
-    let image = body.get("image").cloned();
+                if !bytes.is_empty() {
+                    image = Some(bytes);
+                }
+            }
+            _ => {}
+        }
+    }
 
     let conn = get_connection()?;
-    let total_pages = count_certificates(&conn)? as u32;
 
-    let (Some(name), Some(issuer), Some(date), Some(category), Some(image)) =
+    let mut error = None;
+
+    if let (Some(name), Some(issuer), Some(date), Some(category), Some(image)) =
         (name, issuer, date, category, image)
-    else {
-        let certificates = get_certificates_paginated(&conn, 1, 10)?;
-        return templ(CertTable {
-            certificates,
-            page: 1,
-            total_pages,
-            error: None,
-        });
-    };
+    {
+        let cert = CertificateMeta {
+            id: None,
+            name,
+            issuer,
+            date,
+            category,
+        };
+        let image = Image {
+            id: None,
+            data: image.to_vec(),
+        };
+        add_certificate(&conn, cert, image)?;
+    } else {
+        error = Some("missing fields in form data")
+    }
 
-    let cert = CertificateMeta {
-        id: None,
-        name,
-        issuer,
-        date,
-        category,
-    };
-
-    let image = Image {
-        id: None,
-        data: decode_base64(&image)?,
-    };
-
-    add_certificate(&conn, cert, image)?;
+    let total_pages = count_certificates(&conn)? as u32;
     let certificates = get_certificates_paginated(&conn, 1, 10)?;
 
-    templ(CertTable {
+    Ok(CertTable {
         certificates,
         page: 1,
         total_pages,
-        error: None,
+        error,
     })
 }
 
-pub fn delete_certificate(req: Request, params: Params) -> Result<impl IntoResponse> {
-    let Ok(_) = authenticate(&req, Role::Admin) else {
-        return Ok(redirect("/admin/auth", false));
-    };
-
-    let Some(id) = params.get("id").and_then(|s| s.parse::<i64>().ok()) else {
-        return templ(AppError::BadRequest);
-    };
-
+pub async fn delete_certificate(_: AdminOnly, Path(id): Path<i64>) -> Result<Response, AppError> {
     let conn = get_connection()?;
 
     let Ok(_) = delete_certificate_db(&conn, id) else {
-        return templ(AppError::InternalServerError);
+        return Err(AppError::InternalServerError);
     };
 
-    Ok(Response::builder().status(StatusCode::OK).build())
+    Ok(StatusCode::NO_CONTENT.into_response())
 }
