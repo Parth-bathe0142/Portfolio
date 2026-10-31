@@ -20,7 +20,7 @@ source = "target/wasm32-wasip1/release/pages.wasm"
 allowed_outbound_hosts = []
 sqlite_databases = ["default"]
 [component.pages.build]
-command = "cargo build --target wasm32-wasip1 --release"
+command = "cargo build --target wasm32-wasip2 --release"
 workdir = "pages"
 watch = ["pages/src/**/*.rs", "templates/**/*.html", "Cargo.toml"]
 
@@ -33,7 +33,7 @@ source = "target/wasm32-wasip1/release/admin.wasm"
 allowed_outbound_hosts = []
 sqlite_databases = ["default"]
 [component.admin.build]
-command = "cargo build --target wasm32-wasip1 --release"
+command = "cargo build --target wasm32-wasip2 --release"
 workdir = "admin"
 watch = ["admin/src/**/*.rs", "templates/**/*.html", "Cargo.toml"]
 
@@ -57,6 +57,6 @@ source = "target/wasm32-wasip1/release/api.wasm"
 allowed_outbound_hosts = []
 sqlite_databases = ["default"]
 [component.api.build]
-command = "cargo build --target wasm32-wasip1 --release"
+command = "cargo build --target wasm32-wasip2 --release"
 workdir = "api"
 watch = ["src/**/*.rs", "Cargo.toml"]
