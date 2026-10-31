@@ -12,6 +12,8 @@ crate-type = ["cdylib"]
 [dependencies]
 anyhow = { workspace = true }
 askama = { workspace = true }
+axum = { workspace = true }
 http = { workspace = true }
 shared = { version = "0.1.0", path = "../shared" }
 spin-sdk = { workspace = true }
+tower = { workspace = true }

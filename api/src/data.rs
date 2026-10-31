@@ -1,29 +1,25 @@
 use anyhow::Result;
-use http::StatusCode;
+use axum::{extract::Path, response::IntoResponse};
+use http::{header, StatusCode};
 use shared::{
     db::{certificates::get_image, get_connection},
     errors::AppError,
-    utils::templ,
 };
-use spin_sdk::http::{IntoResponse, Params, Request, Response};
 
-pub fn get_certificate_image(_: Request, params: Params) -> Result<impl IntoResponse> {
-    let Some(id) = params.get("id").and_then(|s| s.parse().ok()) else {
-        return templ(AppError::BadRequest);
-    };
-
+pub async fn get_certificate_image(Path(id): Path<i64>) -> Result<impl IntoResponse, AppError> {
     let conn = get_connection()?;
 
     let Some(image) = get_image(&conn, id)? else {
-    	println!("not found {id}");
-        return templ(AppError::NotFound);
+        println!("not found {id}");
+        return Err(AppError::NotFound);
     };
 
-    Ok(
-        Response::builder()
-            .status(StatusCode::OK)
-            .header("content-type", "image/png")
-            .body(image.data)
-            .build()
-    )
+    Ok((
+        StatusCode::OK,
+        [
+            (header::CONTENT_TYPE, "image/png"),
+            (header::CACHE_CONTROL, "public, max-age=86400"),
+        ],
+        image.data,
+    ))
 }
