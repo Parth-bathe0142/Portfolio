@@ -5,5 +5,11 @@ members = ["api", "pages", "admin", "shared"]
 [workspace.dependencies]
 anyhow = "1"
 askama = "0.16.1"
-spin-sdk = "3.1.0"
+askama_web = { version = "0.16.0", features = ["axum-0.8"] }
+axum = { version = "0.8", default-features = false, features = ["json", "form", "matched-path", "query", ] }
+axum-extra = { version = "0.12.6", features = ["cookie-private", "typed-header", "form", "multipart", "attachment"] }
+axum-htmx = "0.8.1"
 http = "1.5.0"
+serde = { version = "1.0.229", features = ["derive"] }
+spin-sdk = "3.1.1"
+tower = { version = "0.5.3", default-features = false, features = ["util"] }

@@ -1,0 +1,78 @@
+{% extends "fragments/projects/entry.html" %}
+{% import "components/macros.html" as macros %}
+{% import "fragments/projects/entry.html" as entry_macros %}
+
+{% block header %}
+	{{ entry_macros::project_header("Simple CLI Tools", "https://github.com/Parth-bathe0142/CLI-Applications") }}
+{% endblock %}
+
+{% block summary %}
+	<p>
+		A Cargo workspace of small standalone command-line tools: a bulk file
+		renamer, a wrapper around <code>wasmprinter</code> for converting WASM
+		binaries to their text format, and a practice <code>grep</code>
+		implementation built following the official Rust book.
+	</p>
+	<div class="text-(--ink-soft) mt-2 text-sm flex flex-wrap flex-row gap-4">
+		<span>Rust</span>
+		<span>Clap</span>
+	</div>
+{% endblock %}
+
+
+{% block logo %}{% endblock logo %}
+{#
+	{% block logo_src %}/static/assets/images/cli-tools/logo.png{% endblock %}
+	{% block logo_alt %}Simple CLI Tools logo{% endblock %}
+#}
+
+{% block accordion %}
+	{% call macros::accordion_item("Bulk File Renamer", "bulk-renamer") %}
+		<div class="space-y-3">
+			<p>
+				Renames every file in a folder by replacing part of the file name,
+				or by adding a prefix or suffix.
+			</p>
+			<pre class="overflow-x-auto rounded p-2"><code># replace text in file names
+bfr -p "path/to/dir" --replace "old_text" --with "new_text"
+
+# prepend text
+bfr --start --with "prefix_"
+
+# append text
+bfr --end --with "_suffix"
+
+# remove text (omit --with)
+bfr --replace "text_to_remove"</code></pre>
+			<p>
+				<code>--path</code> defaults to the current directory.
+				<code>--replace</code>, <code>--start</code> and <code>--end</code>
+				are mutually exclusive; <code>--start</code> and <code>--end</code>
+				both require <code>--with</code>. A <code>--quiet</code> flag
+				suppresses the success log for each file.
+			</p>
+		</div>
+	{% endcall %}
+
+	{% call macros::accordion_item("Wat Printer", "wat-printer") %}
+		<div class="space-y-3">
+			<p>
+				A CLI wrapper around the <code>wasmprinter</code> crate that
+				converts <code>.wasm</code> files to the human-readable
+				<code>.wat</code> format, either one file at a time or in bulk
+				across a directory.
+			</p>
+			<pre class="overflow-x-auto rounded p-2"><code># convert a single file
+wat-printer input.wasm [-o output.wat]
+
+# convert every .wasm file in the current directory
+wat-printer --all [-r]</code></pre>
+			<p>
+				<code>--output</code> defaults to the input file's name with a
+				<code>.wat</code> extension. <code>--all</code> conflicts with
+				passing a single input file, and can be combined with
+				<code>--recursive</code> to walk subdirectories.
+			</p>
+		</div>
+	{% endcall %}
+{% endblock %}

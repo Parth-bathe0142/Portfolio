@@ -1,14 +1,16 @@
-use anyhow::{Result, bail};
+use anyhow::Result;
 use argon2::{Argon2, PasswordHash, PasswordHasher, PasswordVerifier};
 use jsonwebtoken::{Algorithm, DecodingKey, EncodingKey, Header, Validation, decode, encode};
 use serde::{Deserialize, Serialize};
-use spin_sdk::{http::Request, variables};
+use spin_sdk::variables;
 
-use crate::{db::user::Role, utils::get_cookies};
+use crate::{db::user::Role};
 
 pub fn get_secret() -> Result<Vec<u8>> {
     Ok(variables::get("jwt_secret")?.as_bytes().to_owned())
 }
+
+pub mod extractor;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Claims {
@@ -54,24 +56,6 @@ pub fn verify_token(token: &str, secret: &[u8]) -> anyhow::Result<Claims> {
         &Validation::new(Algorithm::HS256),
     )?;
     Ok(data.claims)
-}
-
-pub fn authenticate(req: &Request, role: Role) -> Result<()> {
-    let Some(cookies) = get_cookies(&req) else {
-        bail!("missing cookies");
-    };
-
-    let Some(token) = cookies.get("jwt_token") else {
-        bail!("not authenticated");
-    };
-
-    let claims = verify_token(token, &get_secret()?)?;
-
-    if claims.role == role {
-        Ok(())
-    } else {
-        bail!("not autherized")
-    }
 }
 
 pub fn hash_password(password: &str) -> anyhow::Result<String> {
