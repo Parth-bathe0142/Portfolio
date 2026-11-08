@@ -1,4 +1,3 @@
-use anyhow::Result;
 use axum::{
     extract::Path,
     response::{IntoResponse, Response},
@@ -15,15 +14,16 @@ use shared::{
             get_categories, get_certificates_paginated, Image,
         },
         get_connection,
+        resumes::{delete_old, get_resume, set_resume, Resume as ResumeModel},
         user::get_admin,
         CertificateMeta,
     },
-    errors::AppError,
+    errors::{AppError, Result},
 };
 
 use crate::templates::{
-    fragments::{CertContainer, CertTable, Home},
-    AuthPage, CertPage, HomePage,
+    fragments::{CertContainer, CertTable, Home, Resume},
+    AuthPage, CertPage, HomePage, ResumePage,
 };
 
 pub async fn auth_page() -> Result<AuthPage, AppError> {
@@ -180,5 +180,60 @@ pub async fn delete_certificate(_: AdminOnly, Path(id): Path<i64>) -> Result<Res
         return Err(AppError::InternalServerError);
     };
 
+    Ok(StatusCode::NO_CONTENT.into_response())
+}
+
+pub async fn get_resume_page(_: AdminOnly, HxRequest(hx): HxRequest) -> Result<Response> {
+    let conn = get_connection()?;
+
+    Ok(match (get_resume(&conn), hx) {
+        (Ok(resume), true) => Resume { id: resume.id }.into_response(),
+        (Ok(resume), false) => ResumePage { id: resume.id }.into_response(),
+        (Err(AppError::NotFound), true) => Resume { id: None }.into_response(),
+        (Err(AppError::NotFound), false) => ResumePage { id: None }.into_response(),
+        (Err(err), _) => err.into_response(),
+    })
+}
+
+pub async fn add_resume(
+    _: AdminOnly,
+    HxRequest(hx): HxRequest,
+    mut multipart: Multipart,
+) -> Result<Response> {
+    let conn = get_connection()?;
+
+    let mut doc = None;
+
+    while let Some(field) = multipart.next_field().await? {
+        let field_name = field.name().map(str::to_owned);
+        match field_name.as_deref() {
+            Some("doc") => {
+                let bytes = field.bytes().await?;
+
+                if !bytes.is_empty() {
+                    doc = Some(bytes);
+                }
+            }
+            _ => {}
+        }
+    }
+
+    let Some(doc) = doc else {
+        return Err(AppError::BadRequest);
+    };
+
+    let resume = ResumeModel::new(doc.to_vec());
+    let id = set_resume(resume, &conn)?;
+
+    if hx {
+        Ok(Resume { id: Some(id) }.into_response())
+    } else {
+        Ok(ResumePage { id: Some(id) }.into_response())
+    }
+}
+
+pub async fn delete_old_resumes(_: AdminOnly) -> Result<Response> {
+    let conn = get_connection()?;
+    delete_old(&conn)?;
     Ok(StatusCode::NO_CONTENT.into_response())
 }

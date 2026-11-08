@@ -1,9 +1,7 @@
 use spin_sdk::sqlite::Connection;
 
 use crate::{
-    db::FromRow,
-    errors::{AppError, Result},
-    utils::{blob, int, text},
+    db::FromRow, errors::{AppError, Result}, utils::{blob, int, last_rowid, text},
 };
 
 pub struct CertificateMeta {
@@ -153,10 +151,7 @@ pub fn add_certificate(conn: &Connection, cert: CertificateMeta, image: Image) -
     )
     .map_err(|_| AppError::InternalServerError)?;
 
-    let res = conn
-        .execute("SELECT last_insert_rowid()", &[])
-        .map_err(|_| AppError::InternalServerError)?;
-    let id = res.rows.first().unwrap().get::<i64>(0).unwrap();
+    let id = last_rowid(conn)?;
 
     conn.execute(
         "INSERT INTO p_certificates_images (id, image) VALUES (?, ?)",

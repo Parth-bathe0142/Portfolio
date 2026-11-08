@@ -23,3 +23,9 @@ pub struct CertPage {
     pub total_pages: u32,
     pub error: Option<&'static str>,
 }
+
+#[derive(Template, WebTemplate)]
+#[template(path = "pages/admin/resume.html")]
+pub struct ResumePage {
+	pub id: Option<i64>
+}

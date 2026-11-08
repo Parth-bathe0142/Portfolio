@@ -3,9 +3,7 @@ use spin_sdk::sqlite::Connection;
 use std::fmt::Display;
 
 use crate::{
-    db::FromRow,
-    errors::{AppError, Result},
-    utils::text,
+    db::FromRow, errors::{AppError, Result}, utils::{last_rowid, text},
 };
 
 #[derive(Debug, Serialize, Deserialize, Clone, Copy, PartialEq, Eq)]
@@ -93,14 +91,7 @@ pub fn add_user(user: User, conn: &Connection) -> Result<i64> {
     )
     .map_err(|_| AppError::InternalServerError)?;
 
-    let id = conn
-        .execute("select last_insert_rowid()", &[])
-        .map_err(|_| AppError::InternalServerError)?
-        .rows
-        .first()
-        .ok_or_else(|| AppError::InternalServerError)?
-        .get::<i64>(0)
-        .ok_or_else(|| AppError::InternalServerError)?;
+    let id = last_rowid(conn)?;
 
     Ok(id)
 }

@@ -1,0 +1,30 @@
+<div
+	class="max-w-4xl mx-auto my-10 px-6 md:px-12 pt-20 pb-16 flex flex-col items-center"
+>
+	<div>
+		<form
+			action="/admin/resume"
+			hx-post="/admin/resume"
+			hx-encoding="multipart/form-data"
+		>
+			<label for="doc">Upload new: </label>
+			<input type="file" name="doc" accept="application/pdf" required />
+			{% if id.is_some() %}
+				<button type="submit">Replace</button>
+			{% else %}
+				<button type="submit">Upload</button>
+			{% endif %}
+		</form>
+	</div>
+	{% if id.is_some() %}
+		<div>
+			<object data="/api/data/resume" type="application/pdf">
+				<a href="/api/data/resume"></a>
+			</object>
+		</div>
+	{% else %}
+		<div class="flex items-center justify-center">
+			No Resume uploaded
+		</div>
+	{% endif %}
+</div>

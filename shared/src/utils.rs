@@ -1,5 +1,7 @@
 use axum_extra::extract::cookie::{Cookie, SameSite};
-use spin_sdk::sqlite::Value;
+use spin_sdk::sqlite::{Connection, Value};
+
+use crate::errors::{AppError, Result};
 
 pub fn int(num: i64) -> Value {
     Value::Integer(num)
@@ -20,4 +22,15 @@ pub fn hard_cookie(name: &str, value: String) -> Cookie<'_> {
         .same_site(SameSite::Strict)
         .path("/")
         .build()
+}
+
+pub fn last_rowid(conn: &Connection) -> Result<i64> {
+    Ok(conn
+        .execute("SELECT last_insert_rowid()", &[])
+        .map_err(|_| AppError::InternalServerError)?
+        .rows
+        .first()
+        .unwrap()
+        .get::<i64>(0)
+        .unwrap())
 }

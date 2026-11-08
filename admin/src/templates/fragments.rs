@@ -24,3 +24,9 @@ pub struct CertContainer {
     pub total_pages: u32,
     pub error: Option<&'static str>,
 }
+
+#[derive(Template, WebTemplate)]
+#[template(path = "fragments/admin/resume.html")]
+pub struct Resume {
+	pub id: Option<i64>
+}

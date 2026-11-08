@@ -1,9 +1,7 @@
 use spin_sdk::sqlite::Connection;
 
 use crate::{
-    db::FromRow,
-    errors::{AppError, Result},
-    utils::{blob, int},
+    db::FromRow, errors::{AppError, Result}, utils::{blob, int, last_rowid},
 };
 
 pub struct Resume {
@@ -46,7 +44,7 @@ pub fn get_resume(conn: &Connection) -> Result<Resume> {
     }
 }
 
-pub fn set_resume(resume: Resume, conn: &Connection) -> Result<()> {
+pub fn set_resume(resume: Resume, conn: &Connection) -> Result<i64> {
     let Resume {
         created_at, doc, ..
     } = resume;
@@ -57,7 +55,7 @@ pub fn set_resume(resume: Resume, conn: &Connection) -> Result<()> {
     )
     .map_err(|_| AppError::InternalServerError)?;
 
-    Ok(())
+    last_rowid(&conn)
 }
 
 pub fn delete_old(conn: &Connection) -> Result<()> {

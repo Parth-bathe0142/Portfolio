@@ -8,8 +8,8 @@ use tower::ServiceExt;
 
 use crate::auth::{handle_login, handle_logout, handle_register};
 use crate::routes::{
-    auth_page, delete_certificate, get_certificates_page, get_certificates_table, home,
-    new_certificate,
+    add_resume, auth_page, delete_certificate, delete_old_resumes, get_certificates_page,
+    get_certificates_table, get_resume_page, home, new_certificate,
 };
 
 mod auth;
@@ -41,6 +41,12 @@ fn router(state: AppState) -> Router {
         .route(
             "/admin/certificates/{page}",
             get(get_certificates_table).delete(delete_certificate),
+        )
+        .route(
+            "/admin/resume",
+            get(get_resume_page)
+                .post(add_resume)
+                .delete(delete_old_resumes),
         )
         .route("/admin/register", post(handle_register))
         .route("/admin/login", post(handle_login))
