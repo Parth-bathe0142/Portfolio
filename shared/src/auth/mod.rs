@@ -1,4 +1,4 @@
-use anyhow::Result;
+use anyhow::{Result, anyhow};
 use argon2::{Argon2, PasswordHash, PasswordHasher, PasswordVerifier};
 use jsonwebtoken::{Algorithm, DecodingKey, EncodingKey, Header, Validation, decode, encode};
 use serde::{Deserialize, Serialize};
@@ -32,7 +32,7 @@ impl Claims {
     }
 }
 
-pub fn create_token(user_id: &str, role: Role, secret: &[u8]) -> anyhow::Result<String> {
+pub fn create_token(user_id: &str, role: Role, secret: &[u8]) -> Result<String> {
     let now = chrono::Utc::now().timestamp();
 
     let claims = Claims {
@@ -49,7 +49,7 @@ pub fn create_token(user_id: &str, role: Role, secret: &[u8]) -> anyhow::Result<
     )?)
 }
 
-pub fn verify_token(token: &str, secret: &[u8]) -> anyhow::Result<Claims> {
+pub fn verify_token(token: &str, secret: &[u8]) -> Result<Claims> {
     let data = decode::<Claims>(
         token,
         &DecodingKey::from_secret(secret),
@@ -58,20 +58,20 @@ pub fn verify_token(token: &str, secret: &[u8]) -> anyhow::Result<Claims> {
     Ok(data.claims)
 }
 
-pub fn hash_password(password: &str) -> anyhow::Result<String> {
+pub fn hash_password(password: &str) -> Result<String> {
     let argon2 = Argon2::default();
 
     let hash = argon2
         .hash_password(password.as_bytes())
-        .map_err(|e| anyhow::anyhow!("hashing failed: {}", e))?
+        .map_err(|e| anyhow!("hashing failed: {}", e))?
         .to_string();
 
     Ok(hash)
 }
 
-pub fn verify_password(password: &str, stored_hash: &str) -> anyhow::Result<bool> {
+pub fn verify_password(password: &str, stored_hash: &str) -> Result<bool> {
     let parsed_hash = PasswordHash::new(stored_hash)
-        .map_err(|e| anyhow::anyhow!("invalid stored hash: {}", e))?;
+        .map_err(|e| anyhow!("invalid stored hash: {}", e))?;
 
     Ok(Argon2::default()
         .verify_password(password.as_bytes(), &parsed_hash)

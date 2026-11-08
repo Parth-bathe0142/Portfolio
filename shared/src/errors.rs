@@ -5,7 +5,7 @@ use http::StatusCode;
 
 pub type Result<T, E = AppError> = core::result::Result<T, E>;
 
-#[derive(Template)]
+#[derive(Template, Debug, Clone)]
 #[template(path = "components/error.html")]
 pub enum AppError {
     /// 301

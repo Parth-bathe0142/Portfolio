@@ -10,7 +10,6 @@ askama = { workspace = true }
 askama_web = { workspace = true }
 axum = { workspace = true }
 axum-extra = { workspace = true }
-base64 = "0.23.1"
 chrono = "0.4.45"
 http = { workspace = true }
 jsonwebtoken = { version = "11.0.0", features = ["rust_crypto"] }
