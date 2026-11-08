@@ -3,6 +3,8 @@ use axum::response::{Html, IntoResponse, Redirect, Response};
 use axum_extra::extract::multipart::MultipartError;
 use http::StatusCode;
 
+pub type Result<T, E = AppError> = core::result::Result<T, E>;
+
 #[derive(Template)]
 #[template(path = "components/error.html")]
 pub enum AppError {
