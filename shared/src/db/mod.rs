@@ -1,14 +1,16 @@
-use anyhow::Result;
 use spin_sdk::sqlite::{Connection, Row};
 
 pub mod certificates;
+pub mod resumes;
 pub mod user;
 
 pub use certificates::CertificateMeta;
 pub use user::User;
 
+use crate::errors::{AppError, Result};
+
 pub fn get_connection() -> Result<Connection> {
-    let conn = Connection::open_default()?;
+    let conn = Connection::open_default().map_err(|_| AppError::InternalServerError)?;
 
     conn.execute(
         "
@@ -20,7 +22,7 @@ pub fn get_connection() -> Result<Connection> {
 		)
 	",
         &[],
-    )?;
+    ).map_err(|_| AppError::InternalServerError)?;
 
     conn.execute(
         "
@@ -32,7 +34,7 @@ pub fn get_connection() -> Result<Connection> {
 			category TEXT NOT NULL
 		)",
         &[],
-    )?;
+    ).map_err(|_| AppError::InternalServerError)?;
     conn.execute(
         "
 		CREATE TABLE IF NOT EXISTS p_certificates_images (
@@ -41,7 +43,17 @@ pub fn get_connection() -> Result<Connection> {
 		);
 	",
         &[],
-    )?;
+    ).map_err(|_| AppError::InternalServerError)?;
+    conn.execute(
+        "
+        CREATE TABLE IF NOT EXISTS p_resumes (
+	    	id INTEGER PRIMARY KEY,
+	     	doc BLOB NOT NULL,
+			created_at INTEGER NOT NULL
+		)
+    ",
+        &[],
+    ).map_err(|_| AppError::InternalServerError)?;
     Ok(conn)
 }
 

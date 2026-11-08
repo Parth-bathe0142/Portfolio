@@ -1,10 +1,12 @@
-use std::fmt::Display;
-
-use anyhow::{Result, anyhow, bail};
 use serde::{Deserialize, Serialize};
 use spin_sdk::sqlite::Connection;
+use std::fmt::Display;
 
-use crate::{db::FromRow, utils::text};
+use crate::{
+    db::FromRow,
+    errors::{AppError, Result},
+    utils::text,
+};
 
 #[derive(Debug, Serialize, Deserialize, Clone, Copy, PartialEq, Eq)]
 #[serde(rename_all = "lowercase")]
@@ -17,7 +19,7 @@ impl Role {
         match str {
             "viewer" => Ok(Self::Viewer),
             "admin" => Ok(Self::Admin),
-            _ => bail!("invalid role"),
+            _ => Err(AppError::BadRequest),
         }
     }
 }
@@ -51,17 +53,17 @@ impl FromRow for User {
 
             name: row
                 .get::<&str>("name")
-                .ok_or_else(|| anyhow!("no field 'name' in row"))?
+                .ok_or_else(|| AppError::InternalServerError)?
                 .to_owned(),
 
             role: Role::from_str(
                 row.get::<&str>("role")
-                    .ok_or_else(|| anyhow!("no field 'role' in row"))?,
+                    .ok_or_else(|| AppError::InternalServerError)?,
             )?,
 
             password: Some(
                 row.get::<&str>("password")
-                    .ok_or_else(|| anyhow!("no field 'password' in row"))?
+                    .ok_or_else(|| AppError::InternalServerError)?
                     .to_owned(),
             ),
         })
@@ -69,7 +71,9 @@ impl FromRow for User {
 }
 
 pub fn get_user_by_name(conn: &Connection, name: String) -> Result<Option<User>> {
-    let res = conn.execute("SELECT * FROM p_users WHERE name = ?", &[text(name)])?;
+    let res = conn
+        .execute("SELECT * FROM p_users WHERE name = ?", &[text(name)])
+        .map_err(|_| AppError::InternalServerError)?;
 
     if let Some(row) = res.rows().next() {
         Ok(Some(User::from_row(row)?))
@@ -84,23 +88,27 @@ pub fn add_user(user: User, conn: &Connection) -> Result<i64> {
         &[
             text(user.name),
             text(user.role.to_string()),
-            text(user.password.ok_or_else(|| anyhow!("missing password"))?),
+            text(user.password.ok_or_else(|| AppError::InternalServerError)?),
         ],
-    )?;
+    )
+    .map_err(|_| AppError::InternalServerError)?;
 
     let id = conn
-        .execute("select last_insert_rowid()", &[])?
+        .execute("select last_insert_rowid()", &[])
+        .map_err(|_| AppError::InternalServerError)?
         .rows
         .first()
-        .ok_or_else(|| anyhow!("error saving user"))?
+        .ok_or_else(|| AppError::InternalServerError)?
         .get::<i64>(0)
-        .ok_or_else(|| anyhow!("error saving user"))?;
+        .ok_or_else(|| AppError::InternalServerError)?;
 
     Ok(id)
 }
 
 pub fn get_admin(conn: &Connection) -> Result<Option<User>> {
-    let res = conn.execute("SELECT * FROM p_users where role = 'admin'", &[])?;
+    let res = conn
+        .execute("SELECT * FROM p_users where role = 'admin'", &[])
+        .map_err(|_| AppError::InternalServerError)?;
 
     if let Some(row) = res.rows().next() {
         Ok(Some(User::from_row(row)?))

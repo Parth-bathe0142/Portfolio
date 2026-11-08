@@ -1,7 +1,10 @@
-use anyhow::Result;
 use spin_sdk::sqlite::Connection;
 
-use crate::utils::{blob, int, text};
+use crate::{
+    db::FromRow,
+    errors::{AppError, Result},
+    utils::{blob, int, text},
+};
 
 pub struct CertificateMeta {
     pub id: Option<i64>,
@@ -33,6 +36,34 @@ impl CertificateMeta {
     }
 }
 
+impl FromRow for CertificateMeta {
+    fn from_row(row: spin_sdk::sqlite::Row) -> Result<Self> {
+        Ok(Self {
+            id: row.get::<i64>("id"),
+
+            name: row
+                .get::<&str>("name")
+                .ok_or_else(|| AppError::InternalServerError)?
+                .to_owned(),
+
+            issuer: row
+                .get::<&str>("issuer")
+                .ok_or_else(|| AppError::InternalServerError)?
+                .to_owned(),
+
+            date: row
+                .get::<&str>("date")
+                .ok_or_else(|| AppError::InternalServerError)?
+                .to_owned(),
+
+            category: row
+                .get::<&str>("category")
+                .ok_or_else(|| AppError::InternalServerError)?
+                .to_owned(),
+        })
+    }
+}
+
 pub struct Image {
     pub id: Option<i64>,
     pub data: Vec<u8>,
@@ -45,10 +76,12 @@ pub fn get_certificates_paginated(
 ) -> Result<Vec<CertificateMeta>> {
     let offset = (page - 1).max(0) * per_page;
 
-    let data = conn.execute(
-        "SELECT * FROM p_certificates_meta ORDER BY date DESC LIMIT ? OFFSET ?",
-        &[int(per_page), int(offset)],
-    )?;
+    let data = conn
+        .execute(
+            "SELECT * FROM p_certificates_meta ORDER BY date DESC LIMIT ? OFFSET ?",
+            &[int(per_page), int(offset)],
+        )
+        .map_err(|_| AppError::InternalServerError)?;
 
     let mut certificates = Vec::new();
 
@@ -66,7 +99,9 @@ pub fn get_certificates_paginated(
 }
 
 pub fn count_certificates(conn: &Connection) -> Result<i64> {
-    let data = conn.execute("SELECT COUNT(*) as total FROM p_certificates_meta", &[])?;
+    let data = conn
+        .execute("SELECT COUNT(*) as total FROM p_certificates_meta", &[])
+        .map_err(|_| AppError::InternalServerError)?;
 
     Ok(data
         .rows()
@@ -76,7 +111,12 @@ pub fn count_certificates(conn: &Connection) -> Result<i64> {
 }
 
 pub fn get_image(conn: &Connection, id: i64) -> Result<Option<Image>> {
-    let data = conn.execute("SELECT * FROM p_certificates_images WHERE id = ?", &[int(id)])?;
+    let data = conn
+        .execute(
+            "SELECT * FROM p_certificates_images WHERE id = ?",
+            &[int(id)],
+        )
+        .map_err(|_| AppError::InternalServerError)?;
 
     let Some(row) = data.rows().next() else {
         return Ok(None);
@@ -91,7 +131,9 @@ pub fn get_image(conn: &Connection, id: i64) -> Result<Option<Image>> {
 }
 
 pub fn get_categories(conn: &Connection) -> Result<Vec<String>> {
-    let data = conn.execute("SELECT DISTINCT category FROM p_certificates_meta", &[])?;
+    let data = conn
+        .execute("SELECT DISTINCT category FROM p_certificates_meta", &[])
+        .map_err(|_| AppError::InternalServerError)?;
     let categories = data
         .rows()
         .map(|r| r.get::<&str>("category").unwrap().to_owned())
@@ -108,15 +150,19 @@ pub fn add_certificate(conn: &Connection, cert: CertificateMeta, image: Image) -
             text(cert.date),
             text(cert.category),
         ],
-    )?;
+    )
+    .map_err(|_| AppError::InternalServerError)?;
 
-    let res = conn.execute("SELECT last_insert_rowid()", &[])?;
+    let res = conn
+        .execute("SELECT last_insert_rowid()", &[])
+        .map_err(|_| AppError::InternalServerError)?;
     let id = res.rows.first().unwrap().get::<i64>(0).unwrap();
 
     conn.execute(
         "INSERT INTO p_certificates_images (id, image) VALUES (?, ?)",
         &[int(id), blob(image.data)],
-    )?;
+    )
+    .map_err(|_| AppError::InternalServerError)?;
 
     Ok(id)
 }
@@ -137,21 +183,23 @@ pub fn edit_certificate(
                 text(cert.category),
                 int(id),
             ],
-        )?;
+        ).map_err(|_| AppError::InternalServerError)?;
     }
 
     if let Some(image) = image {
         conn.execute(
             "UPDATE p_certificates_images SET image = ? WHERE id = ?",
             &[blob(image.data), int(id)],
-        )?;
+        )
+        .map_err(|_| AppError::InternalServerError)?;
     }
 
     Ok(())
 }
 
 pub fn delete_certificate(conn: &Connection, id: i64) -> Result<()> {
-    conn.execute("DELETE FROM p_certificates_meta WHERE id = ?", &[int(id)])?;
+    conn.execute("DELETE FROM p_certificates_meta WHERE id = ?", &[int(id)])
+        .map_err(|_| AppError::InternalServerError)?;
 
     Ok(())
 }
