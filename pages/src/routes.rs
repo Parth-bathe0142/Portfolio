@@ -1,14 +1,13 @@
 use axum::{
     extract::Query,
-    http::StatusCode,
     response::{IntoResponse, Response},
 };
 use axum_htmx::HxRequest;
 use serde::Deserialize;
-use shared::db::{
+use shared::{db::{
     certificates::{count_certificates, get_certificates_paginated},
     get_connection,
-};
+}, errors::Result};
 
 use crate::templates::{
     fragments::{Certificates, Home, Projects},
@@ -37,27 +36,18 @@ pub(crate) struct PageQuery {
 }
 
 pub(crate) async fn certificates_paginated(
-    HxRequest(htmx): HxRequest,
+    HxRequest(hx): HxRequest,
     Query(params): Query<PageQuery>,
-) -> Result<Response, StatusCode> {
-    let conn = get_connection().map_err(|e| {
-        eprintln!("Failed to connect to database: {e:#}");
-        StatusCode::INTERNAL_SERVER_ERROR
-    })?;
+) -> Result<Response> {
+    let conn = get_connection()?;
 
     let page = params.page.unwrap_or(1);
 
-    let certificates = get_certificates_paginated(&conn, page, 10).map_err(|e| {
-        eprintln!("Failed to fetch certificates: {e:#}");
-        StatusCode::INTERNAL_SERVER_ERROR
-    })?;
+    let certificates = get_certificates_paginated(&conn, page, 10)?;
 
-    let total_pages = count_certificates(&conn).map_err(|e| {
-        eprintln!("Failed to count certificates: {e:#}");
-        StatusCode::INTERNAL_SERVER_ERROR
-    })?;
+    let total_pages = count_certificates(&conn)?;
 
-    let response = if htmx {
+    let response = if hx {
         Certificates {
             error: None,
             certificates,

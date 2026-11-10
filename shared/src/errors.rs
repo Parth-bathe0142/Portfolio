@@ -1,6 +1,7 @@
 use askama::Template;
 use axum::response::{Html, IntoResponse, Redirect, Response};
 use axum_extra::extract::multipart::MultipartError;
+use axum_htmx::HxRedirect;
 use http::StatusCode;
 
 pub type Result<T, E = AppError> = core::result::Result<T, E>;
@@ -16,12 +17,12 @@ pub enum AppError {
     /// 401
     Unauthorized,
     /// 403
-    Forbidden(&'static str),
+    Forbidden(Box<str>),
     /// 404
     NotFound,
 
     /// 500
-    InternalServerError,
+    ISE(Box<str>),
 }
 
 impl AppError {
@@ -38,7 +39,7 @@ impl AppError {
             AppError::Forbidden(_) => StatusCode::FORBIDDEN.as_u16(),
             AppError::NotFound => StatusCode::NOT_FOUND.as_u16(),
 
-            AppError::InternalServerError => StatusCode::INTERNAL_SERVER_ERROR.as_u16(),
+            AppError::ISE(_) => StatusCode::INTERNAL_SERVER_ERROR.as_u16(),
         }
     }
 
@@ -50,7 +51,7 @@ impl AppError {
             AppError::Forbidden(msg) => msg,
             AppError::NotFound => "Not Found",
 
-            AppError::InternalServerError => "Internal Server Error",
+            AppError::ISE(msg) => msg,
         }
     }
 }
@@ -60,7 +61,7 @@ impl IntoResponse for AppError {
         match self {
             AppError::Redirect { url, hx } => {
                 if hx {
-                    (StatusCode::OK).into_response()
+                    (StatusCode::OK, HxRedirect(url.to_string()), "").into_response()
                 } else {
                     Redirect::to(url).into_response()
                 }
@@ -77,7 +78,7 @@ impl IntoResponse for AppError {
 impl From<anyhow::Error> for AppError {
     fn from(e: anyhow::Error) -> Self {
         eprintln!("internal error: {e:#}");
-        AppError::InternalServerError
+        AppError::ISE(e.to_string().into_boxed_str())
     }
 }
 

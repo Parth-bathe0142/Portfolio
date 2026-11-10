@@ -36,7 +36,7 @@ pub async fn handle_register(
 
     let admin = get_admin(&conn)?;
     if admin.is_some() {
-        return Err(AppError::Forbidden("Super user already exists"));
+        return Err(AppError::Forbidden("Super user already exists".into()));
     }
 
     let admin = User {
@@ -67,11 +67,11 @@ pub async fn handle_login(
     let admin = get_admin(&conn)?;
 
     let Some(admin) = admin else {
-        return Err(AppError::Forbidden("Admin not registered yet"));
+        return Err(AppError::Forbidden("Admin not registered yet".into()));
     };
 
     let Some(hash) = admin.password else {
-        return Err(AppError::InternalServerError);
+        return Err(AppError::ISE("missing field in db".into()));
     };
 
     if !verify_password(&password, &hash)? {

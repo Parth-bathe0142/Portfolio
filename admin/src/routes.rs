@@ -176,9 +176,7 @@ pub async fn new_certificate(
 pub async fn delete_certificate(_: AdminOnly, Path(id): Path<i64>) -> Result<Response, AppError> {
     let conn = get_connection()?;
 
-    let Ok(_) = delete_certificate_db(&conn, id) else {
-        return Err(AppError::InternalServerError);
-    };
+    delete_certificate_db(&conn, id)?;
 
     Ok(StatusCode::NO_CONTENT.into_response())
 }

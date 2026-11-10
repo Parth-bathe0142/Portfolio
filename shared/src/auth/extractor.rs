@@ -1,9 +1,8 @@
 use axum::extract::FromRequestParts;
 use axum_extra::extract::{PrivateCookieJar, cookie::Key};
-use spin_sdk::variables;
 
 use crate::{
-    app_state::AppState, auth::{Claims, verify_token}, db::user::Role, errors::AppError,
+    app_state::AppState, auth::{Claims, get_secret, verify_token}, db::user::Role, errors::AppError,
 };
 
 impl FromRequestParts<AppState> for Claims {
@@ -23,12 +22,9 @@ impl FromRequestParts<AppState> for Claims {
             .value()
             .to_owned();
 
-        let secret = variables::get("jwt_secret")
-            .map_err(|_| AppError::InternalServerError)?
-            .as_bytes()
-            .to_owned();
+        let secret = get_secret()?;
 
-        verify_token(&token, &secret).map_err(|_| AppError::InternalServerError)
+        verify_token(&token, &secret)
     }
 }
 

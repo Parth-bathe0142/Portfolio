@@ -51,17 +51,17 @@ impl FromRow for User {
 
             name: row
                 .get::<&str>("name")
-                .ok_or_else(|| AppError::InternalServerError)?
+                .ok_or_else(|| AppError::ISE("failed to read field 'name' from row".into()))?
                 .to_owned(),
 
             role: Role::from_str(
                 row.get::<&str>("role")
-                    .ok_or_else(|| AppError::InternalServerError)?,
+                    .ok_or_else(|| AppError::ISE("failed to read field 'role' from row".into()))?,
             )?,
 
             password: Some(
                 row.get::<&str>("password")
-                    .ok_or_else(|| AppError::InternalServerError)?
+                    .ok_or_else(|| AppError::ISE("failed to read field 'password' from row".into()))?
                     .to_owned(),
             ),
         })
@@ -71,7 +71,7 @@ impl FromRow for User {
 pub fn get_user_by_name(conn: &Connection, name: String) -> Result<Option<User>> {
     let res = conn
         .execute("SELECT * FROM p_users WHERE name = ?", &[text(name)])
-        .map_err(|_| AppError::InternalServerError)?;
+        .map_err(|_| AppError::ISE("db read error".into()))?;
 
     if let Some(row) = res.rows().next() {
         Ok(Some(User::from_row(row)?))
@@ -86,10 +86,10 @@ pub fn add_user(user: User, conn: &Connection) -> Result<i64> {
         &[
             text(user.name),
             text(user.role.to_string()),
-            text(user.password.ok_or_else(|| AppError::InternalServerError)?),
+            text(user.password.ok_or_else(|| AppError::ISE("db missing field error".into()))?),
         ],
     )
-    .map_err(|_| AppError::InternalServerError)?;
+    .map_err(|_| AppError::ISE("db insert error".into()))?;
 
     let id = last_rowid(conn)?;
 
@@ -99,7 +99,7 @@ pub fn add_user(user: User, conn: &Connection) -> Result<i64> {
 pub fn get_admin(conn: &Connection) -> Result<Option<User>> {
     let res = conn
         .execute("SELECT * FROM p_users where role = 'admin'", &[])
-        .map_err(|_| AppError::InternalServerError)?;
+        .map_err(|_| AppError::ISE("db read error".into()))?;
 
     if let Some(row) = res.rows().next() {
         Ok(Some(User::from_row(row)?))

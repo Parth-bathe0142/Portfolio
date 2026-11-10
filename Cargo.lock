@@ -1560,6 +1560,7 @@ dependencies = [
  "askama_web",
  "axum",
  "axum-extra",
+ "axum-htmx",
  "chrono",
  "http",
  "jsonwebtoken",

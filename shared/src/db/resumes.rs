@@ -1,7 +1,9 @@
 use spin_sdk::sqlite::Connection;
 
 use crate::{
-    db::FromRow, errors::{AppError, Result}, utils::{blob, int, last_rowid},
+    db::FromRow,
+    errors::{AppError, Result},
+    utils::{blob, int, last_rowid},
 };
 
 pub struct Resume {
@@ -22,9 +24,18 @@ impl Resume {
 impl FromRow for Resume {
     fn from_row(row: spin_sdk::sqlite::Row) -> Result<Self> {
         Ok(Self {
-            id: Some(row.get("id").ok_or(AppError::InternalServerError)?),
-            created_at: row.get("id").ok_or(AppError::InternalServerError)?,
-            doc: row.get::<&[u8]>("id").ok_or(AppError::InternalServerError)?.to_owned(),
+            id: Some(row.get("id").ok_or(AppError::ISE(
+                "failed to read field 'id' from row".into(),
+            ))?),
+            created_at: row.get("created_at").ok_or(AppError::ISE(
+                "failed to read field 'created_at' from row".into(),
+            ))?,
+            doc: row
+                .get::<&[u8]>("doc")
+                .ok_or(AppError::ISE(
+                    "failed to read field 'doc' from row".into(),
+                ))?
+                .to_owned(),
         })
     }
 }
@@ -35,7 +46,7 @@ pub fn get_resume(conn: &Connection) -> Result<Resume> {
             "SELECT id, doc, created_at FROM p_resumes ORDER BY id DESC LIMIT 1",
             &[],
         )
-        .map_err(|_| AppError::InternalServerError)?;
+        .map_err(|_| AppError::ISE("db read error".into()))?;
 
     if let Some(row) = data.rows().next() {
         Resume::from_row(row)
@@ -53,7 +64,7 @@ pub fn set_resume(resume: Resume, conn: &Connection) -> Result<i64> {
         "INSERT INTO p_resumes (created_at, doc) VALUES (?,?)",
         &[int(created_at), blob(doc)],
     )
-    .map_err(|_| AppError::InternalServerError)?;
+    .map_err(|_| AppError::ISE("db insert error".into()))?;
 
     last_rowid(&conn)
 }
@@ -64,6 +75,6 @@ pub fn delete_old(conn: &Connection) -> Result<()> {
         WHERE id < (SELECT max(id) FROM p_resumes)",
         &[],
     )
-    .map_err(|_| AppError::InternalServerError)?;
+    .map_err(|_| AppError::ISE("db delete error".into()))?;
     Ok(())
 }

@@ -41,22 +41,22 @@ impl FromRow for CertificateMeta {
 
             name: row
                 .get::<&str>("name")
-                .ok_or_else(|| AppError::InternalServerError)?
+                .ok_or_else(|| AppError::ISE("failed to read field 'name' from row".into()))?
                 .to_owned(),
 
             issuer: row
                 .get::<&str>("issuer")
-                .ok_or_else(|| AppError::InternalServerError)?
+                .ok_or_else(|| AppError::ISE("failed to read field 'issuer' from row".into()))?
                 .to_owned(),
 
             date: row
                 .get::<&str>("date")
-                .ok_or_else(|| AppError::InternalServerError)?
+                .ok_or_else(|| AppError::ISE("failed to read field 'date' from row".into()))?
                 .to_owned(),
 
             category: row
                 .get::<&str>("category")
-                .ok_or_else(|| AppError::InternalServerError)?
+                .ok_or_else(|| AppError::ISE("failed to read field 'category' from row".into()))?
                 .to_owned(),
         })
     }
@@ -79,18 +79,12 @@ pub fn get_certificates_paginated(
             "SELECT * FROM p_certificates_meta ORDER BY date DESC LIMIT ? OFFSET ?",
             &[int(per_page), int(offset)],
         )
-        .map_err(|_| AppError::InternalServerError)?;
+        .map_err(|_| AppError::ISE("db read error".into()))?;
 
     let mut certificates = Vec::new();
 
     for row in data.rows() {
-        certificates.push(CertificateMeta::with_id(
-            row.get::<i64>("id").unwrap(),
-            row.get::<&str>("name").unwrap().to_string(),
-            row.get::<&str>("issuer").unwrap().to_string(),
-            row.get::<&str>("date").unwrap().to_string(),
-            row.get::<&str>("category").unwrap().to_string(),
-        ));
+        certificates.push(CertificateMeta::from_row(row)?);
     }
 
     Ok(certificates)
@@ -99,7 +93,7 @@ pub fn get_certificates_paginated(
 pub fn count_certificates(conn: &Connection) -> Result<i64> {
     let data = conn
         .execute("SELECT COUNT(*) as total FROM p_certificates_meta", &[])
-        .map_err(|_| AppError::InternalServerError)?;
+        .map_err(|_| AppError::ISE("db read error".into()))?;
 
     Ok(data
         .rows()
@@ -114,7 +108,7 @@ pub fn get_image(conn: &Connection, id: i64) -> Result<Option<Image>> {
             "SELECT * FROM p_certificates_images WHERE id = ?",
             &[int(id)],
         )
-        .map_err(|_| AppError::InternalServerError)?;
+        .map_err(|_| AppError::ISE("db read error".into()))?;
 
     let Some(row) = data.rows().next() else {
         return Ok(None);
@@ -131,7 +125,7 @@ pub fn get_image(conn: &Connection, id: i64) -> Result<Option<Image>> {
 pub fn get_categories(conn: &Connection) -> Result<Vec<String>> {
     let data = conn
         .execute("SELECT DISTINCT category FROM p_certificates_meta", &[])
-        .map_err(|_| AppError::InternalServerError)?;
+        .map_err(|_| AppError::ISE("db read error".into()))?;
     let categories = data
         .rows()
         .map(|r| r.get::<&str>("category").unwrap().to_owned())
@@ -149,7 +143,7 @@ pub fn add_certificate(conn: &Connection, cert: CertificateMeta, image: Image) -
             text(cert.category),
         ],
     )
-    .map_err(|_| AppError::InternalServerError)?;
+    .map_err(|_| AppError::ISE("db insert error".into()))?;
 
     let id = last_rowid(conn)?;
 
@@ -157,7 +151,7 @@ pub fn add_certificate(conn: &Connection, cert: CertificateMeta, image: Image) -
         "INSERT INTO p_certificates_images (id, image) VALUES (?, ?)",
         &[int(id), blob(image.data)],
     )
-    .map_err(|_| AppError::InternalServerError)?;
+    .map_err(|_| AppError::ISE("db insert error".into()))?;
 
     Ok(id)
 }
@@ -178,7 +172,7 @@ pub fn edit_certificate(
                 text(cert.category),
                 int(id),
             ],
-        ).map_err(|_| AppError::InternalServerError)?;
+        ).map_err(|_| AppError::ISE("db update error".into()))?;
     }
 
     if let Some(image) = image {
@@ -186,7 +180,7 @@ pub fn edit_certificate(
             "UPDATE p_certificates_images SET image = ? WHERE id = ?",
             &[blob(image.data), int(id)],
         )
-        .map_err(|_| AppError::InternalServerError)?;
+        .map_err(|_| AppError::ISE("db update error".into()))?;
     }
 
     Ok(())
@@ -194,7 +188,7 @@ pub fn edit_certificate(
 
 pub fn delete_certificate(conn: &Connection, id: i64) -> Result<()> {
     conn.execute("DELETE FROM p_certificates_meta WHERE id = ?", &[int(id)])
-        .map_err(|_| AppError::InternalServerError)?;
+        .map_err(|_| AppError::ISE("db delete error".into()))?;
 
     Ok(())
 }

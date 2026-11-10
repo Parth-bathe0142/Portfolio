@@ -27,7 +27,7 @@ pub fn hard_cookie(name: &str, value: String) -> Cookie<'_> {
 pub fn last_rowid(conn: &Connection) -> Result<i64> {
     Ok(conn
         .execute("SELECT last_insert_rowid()", &[])
-        .map_err(|_| AppError::InternalServerError)?
+        .map_err(|_| AppError::ISE("db error".into()))?
         .rows
         .first()
         .unwrap()

@@ -10,7 +10,7 @@ pub use user::User;
 use crate::errors::{AppError, Result};
 
 pub fn get_connection() -> Result<Connection> {
-    let conn = Connection::open_default().map_err(|_| AppError::InternalServerError)?;
+    let conn = Connection::open_default().map_err(|_| AppError::ISE("db connection error".into()))?;
 
     conn.execute(
         "
@@ -22,7 +22,7 @@ pub fn get_connection() -> Result<Connection> {
 		)
 	",
         &[],
-    ).map_err(|_| AppError::InternalServerError)?;
+    ).map_err(|_| AppError::ISE("db init error".into()))?;
 
     conn.execute(
         "
@@ -34,7 +34,7 @@ pub fn get_connection() -> Result<Connection> {
 			category TEXT NOT NULL
 		)",
         &[],
-    ).map_err(|_| AppError::InternalServerError)?;
+    ).map_err(|_| AppError::ISE("db init error".into()))?;
     conn.execute(
         "
 		CREATE TABLE IF NOT EXISTS p_certificates_images (
@@ -43,7 +43,7 @@ pub fn get_connection() -> Result<Connection> {
 		);
 	",
         &[],
-    ).map_err(|_| AppError::InternalServerError)?;
+    ).map_err(|_| AppError::ISE("db init error".into()))?;
     conn.execute(
         "
         CREATE TABLE IF NOT EXISTS p_resumes (
@@ -53,7 +53,7 @@ pub fn get_connection() -> Result<Connection> {
 		)
     ",
         &[],
-    ).map_err(|_| AppError::InternalServerError)?;
+    ).map_err(|_| AppError::ISE("db init error".into()))?;
     Ok(conn)
 }
 
