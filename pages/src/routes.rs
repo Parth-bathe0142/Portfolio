@@ -5,13 +5,11 @@ use axum::{
 use axum_htmx::HxRequest;
 use serde::Deserialize;
 use shared::{db::{
-    certificates::{count_certificates, get_certificates_paginated},
-    get_connection,
+    certificates::{count_certificates, get_certificates_paginated}, get_connection, resumes::get_resume,
 }, errors::Result};
 
 use crate::templates::{
-    fragments::{Certificates, Home, Projects},
-    CertificatesPage, HomePage, ProjectsPage,
+    CertificatesPage, HomePage, ProjectsPage, ResumePage, fragments::{Certificates, Home, Projects, Resume},
 };
 
 pub(crate) async fn home(HxRequest(hx): HxRequest) -> Response {
@@ -66,4 +64,15 @@ pub(crate) async fn certificates_paginated(
     };
 
     Ok(response)
+}
+
+pub async fn resume(HxRequest(hx): HxRequest) -> Result<Response> {
+	let conn = get_connection()?;
+	let resume = get_resume(&conn)?;
+
+	if hx {
+		Ok(Resume { id: resume.id }.into_response())
+	} else {
+		Ok(ResumePage { id: resume.id }.into_response())
+	}
 }

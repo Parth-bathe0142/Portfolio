@@ -22,3 +22,9 @@ pub struct Certificates {
 #[derive(Template, WebTemplate)]
 #[template(path = "fragments/not_found.html")]
 pub struct NotFound;
+
+#[derive(Template, WebTemplate)]
+#[template(path = "fragments/resume.html")]
+pub struct Resume {
+	pub id: Option<i64>
+}

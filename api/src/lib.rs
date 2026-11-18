@@ -1,10 +1,10 @@
-use axum::Router;
 use axum::routing::get;
-use spin_sdk::http::{IntoResponse as SpinIntoResponse};
+use axum::Router;
+use spin_sdk::http::IntoResponse as SpinIntoResponse;
 use spin_sdk::http_component;
 use tower::ServiceExt;
 
-use crate::data::get_certificate_image;
+use crate::data::{download_resume, get_certificate_image, get_resume_doc};
 
 pub mod data;
 
@@ -24,6 +24,8 @@ async fn handle_api(req: http::Request<Vec<u8>>) -> anyhow::Result<impl SpinInto
 }
 
 fn router() -> Router {
-	Router::new()
-		.route("/api/data/certificate/{id}", get(get_certificate_image))
+    Router::new()
+        .route("/api/data/certificate/{id}", get(get_certificate_image))
+        .route("/api/data/resume", get(get_resume_doc))
+        .route("/api/data/resume/download", get(download_resume))
 }

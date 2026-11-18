@@ -76,6 +76,7 @@ dependencies = [
  "anyhow",
  "askama",
  "axum",
+ "axum-extra",
  "http",
  "shared",
  "spin-sdk",

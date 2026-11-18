@@ -7,7 +7,7 @@ use spin_sdk::http_component;
 use tower::ServiceExt;
 
 use crate::{
-    routes::{certificates_paginated, home, projects},
+    routes::{certificates_paginated, home, projects, resume},
     templates::{fragments::NotFound, NotFoundPage},
 };
 
@@ -34,6 +34,7 @@ fn router() -> Router {
         .route("/", get(home))
         .route("/projects", get(projects))
         .route("/certificates", get(certificates_paginated))
+        .route("/resume", get(resume))
         .fallback(get(async |HxRequest(hx): HxRequest| {
             if hx {
                 NotFound.into_response()

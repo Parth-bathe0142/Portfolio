@@ -24,3 +24,9 @@ pub struct CertificatesPage {
 #[derive(Template, WebTemplate)]
 #[template(path = "pages/not_found.html")]
 pub struct NotFoundPage;
+
+#[derive(Template, WebTemplate)]
+#[template(path = "pages/resume.html")]
+pub struct ResumePage {
+	pub id: Option<i64>
+}
