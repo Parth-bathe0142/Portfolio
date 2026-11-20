@@ -31,6 +31,7 @@ pub(crate) async fn projects(HxRequest(hx): HxRequest) -> Response {
 #[derive(Deserialize)]
 pub(crate) struct PageQuery {
     page: Option<i64>,
+    count: Option<i64>
 }
 
 pub(crate) async fn certificates_paginated(
@@ -40,25 +41,27 @@ pub(crate) async fn certificates_paginated(
     let conn = get_connection()?;
 
     let page = params.page.unwrap_or(1);
+    let count = params.count.unwrap_or(10);
 
-    let certificates = get_certificates_paginated(&conn, page, 10)?;
+    let certificates = get_certificates_paginated(&conn, page, count)?;
 
-    let total_pages = count_certificates(&conn)?;
+    let total_pages = (count_certificates(&conn)? as f32 / count as f32).ceil() as u32;
+    let page = page as u32;
 
     let response = if hx {
         Certificates {
             error: None,
             certificates,
-            page: page as u32,
-            total_pages: total_pages as u32,
+            page,
+            total_pages,
         }
         .into_response()
     } else {
         CertificatesPage {
             error: None,
             certificates,
-            page: page as u32,
-            total_pages: total_pages as u32,
+            page,
+            total_pages,
         }
         .into_response()
     };
