@@ -25,7 +25,7 @@ async fn handle_api(req: http::Request<Vec<u8>>) -> anyhow::Result<impl SpinInto
 
 fn router() -> Router {
     Router::new()
-        .route("/api/data/certificate/{id}", get(get_certificate_image))
+        .route("/api/data/certificates/{id}", get(get_certificate_image))
         .route("/api/data/resume", get(get_resume_doc))
         .route("/api/data/resume/download", get(download_resume))
 }
