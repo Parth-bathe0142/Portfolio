@@ -76,7 +76,8 @@
 	>
 		{% if page > 1 %}
 		<a
-			hx-get="/certificates/{{ page - 1 }}"
+			hx-get="/certificates?page={{ page - 1 }}"
+			hx-push-url="/certificates?page={{ page - 1 }}"
 			hx-target="#certificates-table-wrapper"
 			hx-swap="outerHTML"
 			class="border-(--border) text-(--ink-soft) px-3 py-1.5
@@ -96,7 +97,8 @@
 
 		{% if page < total_pages %}
 		<a
-			hx-get="/certificates/{{ page + 1 }}"
+			hx-get="/certificates?page={{ page + 1 }}"
+			hx-push-url="/certificates?page={{ page + 1 }}"
 			hx-target="#certificates-table-wrapper"
 			hx-swap="outerHTML"
 			class="border-(--border) text-(--ink-soft) px-3 py-1.5

@@ -78,6 +78,7 @@ pub async fn get_certificates_page(
 #[derive(Deserialize)]
 pub(crate) struct PageQuery {
     page: Option<i64>,
+    count: Option<i64>,
 }
 
 pub async fn get_certificates_table(
@@ -117,6 +118,7 @@ pub async fn get_certificates_table(
 
 pub async fn new_certificate(
     _admin: AdminOnly,
+    Path(query): Path<PageQuery>,
     mut multipart: Multipart,
 ) -> Result<CertTable, AppError> {
     let (mut name, mut issuer, mut date, mut category, mut image) = (None, None, None, None, None);
@@ -162,12 +164,15 @@ pub async fn new_certificate(
         error = Some("missing fields in form data")
     }
 
-    let total_pages = count_certificates(&conn)? as u32;
+    let page = query.page.unwrap_or(1);
+    let count = query.count.unwrap_or(10);
+
+    let total_pages = (count_certificates(&conn)? as f32 / count as f32).ceil() as u32;
     let certificates = get_certificates_paginated(&conn, 1, 10)?;
 
     Ok(CertTable {
         certificates,
-        page: 1,
+        page: page as u32,
         total_pages,
         error,
     })
