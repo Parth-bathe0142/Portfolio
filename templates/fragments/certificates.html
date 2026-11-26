@@ -67,7 +67,7 @@
 					<button
 						class="border-(--border) text-(--ink-soft)
 						font-mono text-xs px-3 py-1.5 rounded-sm border mr-2"
-						@click="imageUrl = '/api/data/certificates/{{ id }}'"
+						@click="imageUrl = '/api/data/certificates/{{ id }}'; $dispatch('open:modal:image')"
 					>
 						Show
 					</button>
@@ -126,7 +126,7 @@
 					class="max-w-full"
 					x-ref="image"
 					:src="imageUrl"
-					x-init="$watch('imageUrl', _ => open = true)"
+					@open:modal:image.window="open = true"
 				/>
 			</div>
 	{% endcall %}
