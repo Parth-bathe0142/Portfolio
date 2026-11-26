@@ -49,6 +49,18 @@
 				{% include "fragments/home.html" %} 
 			{% endblock content %}
 		</main>
+		<footer class="bg-(--nav-bg) text-(--ink-soft) border-(--border) border-t mt-8 p-4 text-center text-sm">
+			<nav class="flex flex-wrap justify-center gap-4">
+				<a href="mailto:parth.bathe0142@gmail.com" class="hover:underline">Email</a>
+				<a href="https://github.com/Parth-bathe0142" class="hover:underline">GitHub</a>
+				<a href="https://www.linkedin.com/in/parth-bathe-65659725b" class="hover:underline">LinkedIn</a>
+				<a href="/resume" hx-get="/resume" hx-target="main" hx-swap="innerHTML" hx-push-url="/resume" class="hover:underline">Resume</a>
+			</nav>
+			<p class="mt-2">
+				© 2026 Parth Bathe · Built with Rust, Axum, Askama, HTMX and Alpine ·
+				<a href="https://github.com/Parth-bathe0142/Portfolio" class="hover:underline">Source</a>
+			</p>
+		</footer>
 	</body>
 	<script src="https://unpkg.com/htmx.org@4.0.0/dist/htmx.min.js"></script>
 	<script src="https://unpkg.com/htmx.org@4.0.0/dist/ext/hx-alpine-compat.js"></script>
