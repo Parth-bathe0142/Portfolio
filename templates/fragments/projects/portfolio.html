@@ -1,0 +1,93 @@
+{% extends "fragments/projects/entry.html" %}
+{% import "components/macros.html" as macros %}
+{% import "fragments/projects/entry.html" as entry_macros %}
+
+{% block header %}
+	{{ entry_macros::project_header("Portfolio", "https://github.com/Parth-bathe0142/Portfolio") }}
+{% endblock %}
+
+{% block summary %}
+	<p>
+		The site you're on: a server-side rendered single-page app written in Rust.
+		Axum handles routing inside Spin components, Askama renders the pages, and
+		HTMX and Alpine provide navigation and interactivity. It's deployed on
+		Fermyon Cloud, and it includes a password-protected admin area for managing
+		its own content.
+		<a href="https://parth-bathe.fermyon.app/">Live site</a>
+	</p>
+	<div class="text-(--ink-soft) mt-2 text-sm flex flex-wrap flex-row gap-4">
+		<span>Rust</span>
+		<span>Axum</span>
+		<span>Spin</span>
+		<span>Askama</span>
+		<span>HTMX</span>
+		<span>Alpine</span>
+		<span>Tailwind</span>
+		<span>Fermyon Cloud</span>
+	</div>
+{% endblock %}
+
+{% block logo %}{% endblock logo %}
+
+{% block accordion %}
+	{% call macros::accordion_item("Details", "details") %}
+		<div class="space-y-3">
+			<h3 class="font-semibold">SSR SPA with HTMX</h3>
+			<p>
+				Navigation links use <code>hx-get</code> to fetch a page and swap it
+				into <code>&lt;main&gt;</code>, with <code>hx-push-url</code> keeping the
+				address bar in sync. Each route checks whether the request came from
+				HTMX and returns either just the fragment or the full page. The same
+				routes therefore serve both in-app navigation and direct visits,
+				refreshes and the browser's back button. Alpine handles small pieces
+				of client-side state such as the accordions.
+			</p>
+
+			<h3 class="font-semibold">Architecture</h3>
+			<p>The app is a Spin application made of four components plus a shared crate:</p>
+			<ul class="list-disc pl-5">
+				<li><strong>pages:</strong> renders every public page and fragment.</li>
+				<li>
+					<strong>admin:</strong> the interface for adding content, such as
+					uploading certificates and updating the resume. It's protected by a
+					password, with a JWT stored in Axum's private cookie jar.
+				</li>
+				<li>
+					<strong>api:</strong> serves non-HTML data, such as the files and
+					images uploaded through the admin pages.
+				</li>
+				<li><strong>shared:</strong> code common to the components.</li>
+			</ul>
+			<p>
+				Other static assets are served by Spin's asset server. Spin's SDK is
+				pinned to v3.1.1 for Fermyon Cloud compatibility. To keep the app
+				portable, each Spin handler just forwards the request into a regular
+				Axum router and converts the response back. Spin only runs the
+				components, while routing and logic stay in plain Axum.
+			</p>
+
+			<h3 class="font-semibold">Pages</h3>
+			<ul class="list-disc pl-5">
+				<li>Home: summary, education and skills.</li>
+				<li>Projects: the entries you're reading now.</li>
+				<li>Certificates: a paginated list driven by HTMX.</li>
+				<li>Resume: rendered in the page with a download button.</li>
+			</ul>
+
+			<h3 class="font-semibold">Why Spin</h3>
+			<p>
+				I already had a Fermyon account from <a href="/projects/krypt">Krypt</a>,
+				and hosting was free. Spin's per-request execution model suits a site
+				like this less well than a long-running server, so if I move to a VPS
+				the Axum app can come along mostly as it is.
+			</p>
+
+			<h3 class="font-semibold">Work in progress</h3>
+			<ul class="list-disc pl-5">
+				<li>Styling isn't finalised and the layout isn't responsive yet.</li>
+				<li>Editing the details of uploaded certificates is not implemented.</li>
+				<li>The resume needs an image fallback for devices that can't display PDFs in the browser.</li>
+			</ul>
+		</div>
+	{% endcall %}
+{% endblock %}

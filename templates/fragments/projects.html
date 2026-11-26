@@ -1,7 +1,7 @@
 {% import "components/macros.html" as macros %}
 <title>Projects | Parth Bathe</title>
 
-<script type="module">
+<script>
 	document.addEventListener("alpine:init", () => {
 		Alpine.data("imageGroup", () => ({
 			images: [],
@@ -20,7 +20,6 @@
 				this.current = this.images.indexOf(src);
 			},
 
-			
 			next() {
 				this.current = (this.current + 1) % this.images.length;
 				this.setCurrentImage();
@@ -36,14 +35,25 @@
 	class="max-w-4xl mx-auto mt-10"
 	x-data="imageGroup"
 >
-	
-	{% include "fragments/projects/krypt.html" %}
+	<div class="my-8">
+		<h1 class="text-(--ink) font-bold text-3xl text-center">Projects</h1>
+	</div>
 
+	{{ macros::wip_banner("not responsive") }}
+
+	<div class="mb-8"></div>
+	
+	{% include "fragments/projects/portfolio.html" %}
+	
 	{% include "fragments/projects/vector_hue.html" %}
+
+	{% include "fragments/projects/krypt.html" %}
 
 	{% include "fragments/projects/research.html" %}
 	
 	{% include "fragments/projects/cli_applications.html" %}
+
+	<div class="mb-16"></div>
 	
 	{% call macros::modal() %}
 		<div id="image-container" class="opacity-100 flex justify-center w-full">
