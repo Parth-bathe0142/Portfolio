@@ -1,18 +1,24 @@
+{% import "components/macros.html" as macros %}
+
 <title>Resume | Parth Bathe</title>
 
 <div
 	id="resume-wrapper"
 	class="max-w-4xl mx-auto mt-10 px-6 md:px-12"
 >
-	<div class="h-20"></div>
+	<div class="my-8">
+		<h1 class="text-(--ink) font-bold text-3xl text-center">Resume</h1>
+	</div>
+
+	{{ macros::wip_banner("pdfs cannot be rendered on mobile, needs an image fallback") }}
+
+	<div class="mb-8"></div>
 
 	{% if id.is_some() %}
 	<div
-		class="border-(--border) flex items-center justify-between
+		class="border-(--border) flex items-end
 		pb-4 border-b font-mono text-xs"
 	>
-		<span class="text-(--ink-soft)">Resume</span>
-
 		<a
 			href="/api/data/resume/download"
 			download

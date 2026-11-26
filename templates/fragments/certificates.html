@@ -4,12 +4,19 @@
 
 <div
 	id="certificates-table-wrapper"
-	class="max-w-4xl mx-auto mt-10"
+	class="max-w-4xl mx-auto mt-16"
 	x-data="{ imageUrl: '' }"
 >
-	<div class="h-20"></div>
+	<div class="my-8">
+		<h1 class="text-(--ink) font-bold text-3xl text-center">Certificates</h1>
+	</div>
+	
+	{{ macros::wip_banner("cannot edit uploaded certificates yet, errors exist") }}
+
+	<div class="mb-8"></div>
+	
 	{% if error.is_some() %}
-	<div id="error">{{ error.unwrap().clone() }}</div>
+		<div id="error">{{ error.unwrap().clone() }}</div>
 	{% endif %}
 	<table class="w-full text-sm border-collapse">
 		<thead>

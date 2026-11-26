@@ -80,3 +80,13 @@
 	<figcaption class="text-(--ink-soft) text-sm text-center">{{ caption }}</figcaption>
 </figure>
 {% endmacro %}
+
+{% macro wip_banner(message) %}
+<div
+	class="text-(--ink-soft) border-amber-500 bg-amber-500/10 flex items-start
+	gap-2 rounded-md border border-dashed p-2 text-sm"
+>
+	<h2><strong class="font-semibold">Work in progress.</strong></h2>
+	<p>{{ message }}</p>
+</div>
+{% endmacro %}
