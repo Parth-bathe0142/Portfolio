@@ -8,99 +8,80 @@
 	x-data="{ imageUrl: '', loading: false }"
 >
 	<div class="my-8">
-		<h1 class="text-(--ink) font-bold text-3xl text-center">Certificates</h1>
+		<h1 class="text-(--ink) font-bold text-3xl text-center">
+			Certificates
+		</h1>
 	</div>
-	
+
 	{{ macros::wip_banner("cannot edit uploaded certificates yet, errors exist") }}
 
 	<div class="mb-8"></div>
-	
+
 	{% if error.is_some() %}
 		<div id="error">{{ error.unwrap().clone() }}</div>
 	{% endif %}
+	
 	<table class="w-full text-sm border-collapse">
 		<thead>
-			<tr class="border-(--border) border-b">
-				<th
-					class="text-(--ink-soft) text-left font-mono text-xs font-normal py-3"
-				>
-					Name
-				</th>
-				<th
-					class="text-(--ink-soft) text-left font-mono text-xs font-normal py-3"
-				>
-					Issuer
-				</th>
-				<th
-					class="text-(--ink-soft) text-left font-mono text-xs font-normal py-3"
-				>
-					Date
-				</th>
-				<th
-					class="text-(--ink-soft) text-left font-mono text-xs font-normal py-3"
-				>
-					Category
-				</th>
-				<th
-					class="text-(--ink-soft) text-right font-mono text-xs font-normal py-3"
-				>
-					Actions
-				</th>
+			<tr
+				class="border-(--border) border-b    *:text-(--ink-soft) *:text-left *:font-mono *:text-xs *:font-normal *:py-3"
+			>
+				<th>Name</th>
+				<th>Issuer</th>
+				<th>Date</th>
+				<th>Category</th>
+				<th>Actions</th>
 			</tr>
 		</thead>
 		<tbody>
 			{% for cert in certificates %} {% let id = cert.id.unwrap() %}
-			<tr class="border-(--border) border-b">
-				<td class="text-(--ink) py-3">{{ cert.name }}</td>
-				<td class="text-(--ink-soft) py-3">{{ cert.issuer }}</td>
-				<td class="text-(--ink-soft) py-3 font-mono text-xs">
-					{{ cert.date }}
-				</td>
-				<td class="py-3">
-					<span
-						class="border-(--border) text-(--secondary)
-						font-mono text-xs border rounded-sm px-2 py-0.5"
-						>{{ cert.category }}</span
-					>
-				</td>
-				<td class="py-3 text-right whitespace-nowrap">
-					<button
-						class="border-(--border) text-(--ink-soft)
-						font-mono text-xs px-3 py-1.5 rounded-sm border mr-2"
-						@click="
-								loading = true;
-								imageUrl = '';
-								$nextTick(() => imageUrl = '/api/data/certificates/{{ id }}');
-								$dispatch('open:modal:image')
-							"
-					>
-						Show
-					</button>
-				</td>
-			</tr>
+				<tr class="border-(--border) border-b">
+					<td class="text-(--ink) py-3">{{ cert.name }}</td>
+					<td class="text-(--ink-soft) py-3">{{ cert.issuer }}</td>
+					<td class="text-(--ink-soft) py-3 font-mono text-xs">
+						{{ cert.date }}
+					</td>
+					<td class="py-3">
+						<span
+							class="border-(--border) text-(--secondary) font-mono text-xs border rounded-sm px-2 py-0.5"
+							>{{ cert.category }}</span
+						>
+					</td>
+					<td class="py-3 text-right whitespace-nowrap">
+						<button
+							class="border-(--border) text-(--ink-soft) font-mono text-xs px-3 py-1.5 rounded-sm border mr-2"
+							@click="
+									loading = true;
+									imageUrl = '';
+									$nextTick(() => imageUrl = '/api/data/certificates/{{ id }}');
+									$dispatch('open:modal:image')
+								"
+						>
+							Show
+						</button>
+					</td>
+				</tr>
 			{% endfor %}
 		</tbody>
 	</table>
 
 	<div
-		class="border-(--border) flex items-center justify-between
-		font-mono text-sm mt-6 pt-4 border-t"
+		class="border-(--border) flex items-center justify-between font-mono text-sm mt-6 pt-4 border-t"
 	>
 		{% if page > 1 %}
-		<a
-			hx-get="/certificates?page={{ page - 1 }}"
-			hx-push-url="/certificates?page={{ page - 1 }}"
-			hx-target="#certificates-table-wrapper"
-			hx-swap="outerHTML"
-			class="border-(--border) text-(--ink-soft) px-3 py-1.5
-			rounded-sm border cursor-pointer"
-		>
-			&larr; Prev
-		</a>
+			<a
+				hx-get="/certificates?page={{ page - 1 }}"
+				hx-push-url="/certificates?page={{ page - 1 }}"
+				hx-target="#certificates-table-wrapper"
+				hx-swap="outerHTML"
+				class="border-(--border) text-(--ink-soft) px-3 py-1.5 rounded-sm border cursor-pointer"
+			>
+				&larr; Prev
+			</a>
 		{% else %}
-		<span class="text-(--ink-soft) px-3 py-1.5 opacity-40"
-			>&larr; Prev</span
-		>
+			<span class="text-(--ink-soft) px-3 py-1.5 opacity-40"
+				>&larr; Prev</span
+			>
 		{% endif %}
 
 		<span class="text-(--ink-soft)"
@@ -108,30 +89,29 @@
 		>
 
 		{% if page < total_pages %}
-		<a
-			hx-get="/certificates?page={{ page + 1 }}"
-			hx-push-url="/certificates?page={{ page + 1 }}"
-			hx-target="#certificates-table-wrapper"
-			hx-swap="outerHTML"
-			class="border-(--border) text-(--ink-soft) px-3 py-1.5
-			rounded-sm border cursor-pointer"
-		>
-			Next &rarr;
-		</a>
+			<a
+				hx-get="/certificates?page={{ page + 1 }}"
+				hx-push-url="/certificates?page={{ page + 1 }}"
+				hx-target="#certificates-table-wrapper"
+				hx-swap="outerHTML"
+				class="border-(--border) text-(--ink-soft) px-3 py-1.5 rounded-sm border cursor-pointer"
+			>
+				Next &rarr;
+			</a>
 		{% else %}
-		<span class="text-(--ink-soft) px-3 py-1.5 opacity-40"
-			>Next &rarr;</span
-		>
+			<span class="text-(--ink-soft) px-3 py-1.5 opacity-40"
+				>Next &rarr;</span
+			>
 		{% endif %}
 	</div>
 	{% call macros::modal() %}
-			<div id="image-container" class="max-w-4xl mx-auto opacity-100">
-				<img
-					alt="displayed certificate"
-					class="max-w-full"
-					:src="imageUrl"
-					x-init="$watch('imageUrl', _ => open = true)"
-				/>
-			</div>
+		<div id="image-container" class="max-w-4xl mx-auto opacity-100">
+			<img
+				alt="displayed certificate"
+				class="max-w-full"
+				:src="imageUrl"
+				x-init="$watch('imageUrl', _ => open = true)"
+			/>
+		</div>
 	{% endcall %}
 </div>
