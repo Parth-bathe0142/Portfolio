@@ -2,8 +2,8 @@
 <title>Projects | Parth Bathe</title>
 
 <script>
-	document.addEventListener("alpine:init", () => {
-		Alpine.data("imageGroup", () => ({
+	function imageGroup() {
+		return {
 			images: [],
 			current: 0,
 			currentImage: null,
@@ -28,12 +28,12 @@
 				this.current = (this.current - 1 + this.images.length) % this.images.length;
 				this.setCurrentImage();
 			},
-		}));
-	});
+		}
+	}
 </script>
 <div
 	class="max-w-4xl mx-auto mt-10"
-	x-data="imageGroup"
+	x-data="imageGroup()"
 >
 	<div class="my-8">
 		<h1 class="text-(--ink) font-bold text-3xl text-center">Projects</h1>

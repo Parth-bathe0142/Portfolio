@@ -5,7 +5,7 @@
 <div
 	id="certificates-table-wrapper"
 	class="max-w-4xl mx-auto mt-16"
-	x-data="{ imageUrl: '' }"
+	x-data="{ imageUrl: '', loading: false }"
 >
 	<div class="my-8">
 		<h1 class="text-(--ink) font-bold text-3xl text-center">Certificates</h1>
@@ -67,7 +67,12 @@
 					<button
 						class="border-(--border) text-(--ink-soft)
 						font-mono text-xs px-3 py-1.5 rounded-sm border mr-2"
-						@click="imageUrl = '/api/data/certificates/{{ id }}'; $dispatch('open:modal:image')"
+						@click="
+								loading = true;
+								imageUrl = '';
+								$nextTick(() => imageUrl = '/api/data/certificates/{{ id }}');
+								$dispatch('open:modal:image')
+							"
 					>
 						Show
 					</button>
@@ -124,9 +129,8 @@
 				<img
 					alt="displayed certificate"
 					class="max-w-full"
-					x-ref="image"
 					:src="imageUrl"
-					@open:modal:image.window="open = true"
+					x-init="$watch('imageUrl', _ => open = true)"
 				/>
 			</div>
 	{% endcall %}
